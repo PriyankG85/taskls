@@ -59,7 +59,7 @@ const CircularProgress = ({
 
       <View className="absolute justify-center items-center w-full h-full">
         <Text style={{ fontSize: size / 4, color: strokeColor }}>
-          {progress * 100}%
+          {Math.round(progress * 100)}%
         </Text>
       </View>
     </Animated.View>

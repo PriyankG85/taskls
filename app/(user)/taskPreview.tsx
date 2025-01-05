@@ -4,6 +4,7 @@ import {
   useColorScheme,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import React, { useContext } from "react";
 import TaskDetailsPreview from "@/components/TaskDetailsPreview";
@@ -40,11 +41,11 @@ const TaskPreview = () => {
   };
 
   return (
-    <View
+    <ScrollView
       className={`flex-1 p-5 pt-7 ${
         dark ? "bg-dark-bg-100" : "bg-light-bg-100"
       }`}
-      style={{ gap: 20 }}
+      contentContainerStyle={{ gap: 20 }}
     >
       <View className="flex-row justify-between items-center">
         <View className="flex-row gap-3 items-center">
@@ -88,7 +89,7 @@ const TaskPreview = () => {
         logo={decodedLogo}
         type="preview"
       />
-    </View>
+    </ScrollView>
   );
 };
 

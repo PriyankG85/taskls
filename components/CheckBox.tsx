@@ -3,10 +3,12 @@ import React from "react";
 import { Check } from "lucide-react-native";
 
 const CheckBox = ({
+  dark,
   size,
   checked,
   setChecked,
 }: {
+  dark: boolean;
   size: number;
   checked: boolean;
   setChecked: (val: boolean) => void;
@@ -17,7 +19,7 @@ const CheckBox = ({
       style={{ width: size, height: size }}
       onPress={() => setChecked(!checked)}
     >
-      {checked && <Check size={size - 6} color="#d1d5db" />}
+      {checked && <Check size={size - 6} color={"#d1d5db"} />}
     </Pressable>
   );
 };

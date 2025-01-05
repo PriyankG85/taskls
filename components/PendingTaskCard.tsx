@@ -80,7 +80,7 @@ const PendingTaskCard = ({
             setTodos(toggleTaskCompleted(todos, taskId, notificationId, false))
           }
         >
-          <CheckCircle size={20} color={"#9ca3afb3"} />
+          <CheckCircle size={20} color={dark ? "#9ca3afb3" : "#e9edc9"} />
         </TouchableOpacity>
       </View>
       <Text

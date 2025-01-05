@@ -53,7 +53,7 @@ const TaskDetailsPreview = ({
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
-    <View className="gap-y-5">
+    <View className="gap-y-5 pb-20">
       <View
         className={`flex-row justify-between items-center p-4 rounded-xl ${
           dark ? "bg-dark-bg-300" : "bg-light-bg-300"
@@ -141,6 +141,7 @@ const TaskDetailsPreview = ({
         </Text>
         <TextInput
           ref={taskTitleRef}
+          multiline
           placeholder="Task Name"
           value={taskTitle}
           onChangeText={(text) => {
@@ -170,7 +171,7 @@ const TaskDetailsPreview = ({
           Task Description
         </Text>
         <TextInput
-          multiline={true}
+          multiline
           numberOfLines={5}
           textAlignVertical="top"
           placeholder={
@@ -184,7 +185,7 @@ const TaskDetailsPreview = ({
           editable={type === "add"}
           className={`${
             dark ? "text-white" : "text-black"
-          } text-lg font-spaceMonoBold`}
+          } text-lg font-spaceMonoBold align-text-top`}
         />
       </View>
       <View
@@ -230,7 +231,12 @@ const TaskDetailsPreview = ({
 
         {type === "add" && checked !== undefined && setChecked && (
           <View className="space-y-3 items-center h-full w-6">
-            <CheckBox size={20} checked={checked} setChecked={setChecked} />
+            <CheckBox
+              dark={dark}
+              size={20}
+              checked={checked}
+              setChecked={setChecked}
+            />
 
             {typeof dueDate === "object" && checked && (
               <TouchableOpacity
