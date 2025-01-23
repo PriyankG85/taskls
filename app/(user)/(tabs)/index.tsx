@@ -1,30 +1,19 @@
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-  useColorScheme,
-} from "react-native";
-import CircularProgress from "@/components/CircularProgress";
+import { ScrollView, Text, View } from "react-native";
+import CircularProgress from "@/components/global/CircularProgress";
 import { router } from "expo-router";
-import PendingTaskCard from "@/components/PendingTaskCard";
-import TaskGroupCard from "@/components/TaskGroupCard";
-import { useContext, useState } from "react";
+import PendingTaskCard from "@/components/home/PendingTaskCard";
+import TaskGroupCard from "@/components/home/TaskGroupCard";
+import { useContext } from "react";
 import TodosContext from "@/context/userTodos";
-import { Plus } from "lucide-react-native";
-import NewTaskGroup from "@/components/newTaskGroup";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { TaskProps } from "@/types/taskProps";
-
-interface TaskGroup {
-  name: string;
-  img?: string;
-}
+import { Button, ButtonText } from "@/components/ui/button";
+import { HStack } from "@/components/ui/hstack";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { TaskGroup } from "@/types/taskGroupProps";
 
 export default function Home() {
-  const colorScheme = useColorScheme();
-  const [showModal, setShowModal] = useState(false);
   const { todos, taskGroups, setTaskGroups } = useContext<{
     todos: TaskProps[];
     taskGroups: TaskGroup[];
@@ -39,7 +28,7 @@ export default function Home() {
     day: "numeric",
     weekday: "short",
   });
-  const todaysTodos = todos.filter((todo) => todo.dueDate === today);
+  const todaysTodos = todos.filter((todo) => todo.dueDate?.date === today);
   const completedTodos = todaysTodos.filter((todo) => todo.completed === true);
   const todaysTasksProgress =
     todaysTodos.length > 0
@@ -64,201 +53,118 @@ export default function Home() {
   };
 
   return (
-    <ScrollView
-      className={`flex-1 pl-5 pt-8 gap-7 ${
-        colorScheme === "dark" ? "bg-dark-bg-100" : "bg-light-bg-100"
-      }`}
-    >
-      <View
-        className={`flex-row justify-between items-center p-7 mr-5 rounded-3xl ${
-          colorScheme === "dark"
-            ? "bg-dark-primary-100"
-            : "bg-light-primary-100"
-        }`}
-      >
-        <View className="items-start gap-5">
-          <Text className="text-dark-text-100 text-lg font-Montserrat">
-            {todaysTasksProgress < 0.5
-              ? "Your today's tasks are\npending!"
-              : "Your today's are\nalmost done!"}
-          </Text>
-
-          <Pressable
-            onPress={() => router.push("/todaysTasks")}
-            className={`rounded-xl ${
-              colorScheme === "dark" ? "bg-dark-accent-200" : "bg-light-bg-200"
-            } px-10 py-2`}
-          >
-            <Text
-              className={`${
-                colorScheme === "dark"
-                  ? "text-dark-primary-100"
-                  : "text-light-text-100"
-              } text-lg font-spaceMono`}
-            >
-              View
-            </Text>
-          </Pressable>
-        </View>
-
-        <CircularProgress
-          progress={todaysTasksProgress}
-          circleColor={"#e0e0e050"}
-          strokeColor={"#e0e0e0"}
-          size={100}
-          strokeWidth={10}
-        />
-      </View>
-
-      <View className="space-y-3">
-        <View className="flex-row items-center gap-2">
-          <Text
-            className={`text-2xl font-spaceMono ${
-              colorScheme === "dark"
-                ? "text-dark-text-200"
-                : "text-light-text-200"
-            }`}
-          >
-            Pending
-          </Text>
-
-          <Text
-            className={`text-sm text-center ${
-              colorScheme === "dark"
-                ? "bg-dark-primary-300 text-light-text-200"
-                : "bg-light-primary-300 text-dark-text-200"
-            } rounded-lg w-5 h-5`}
-          >
-            {pendingTodos.length}
-          </Text>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10, paddingRight: 20 }}
+    <ScrollView className="flex-1 pt-8 dark:bg-dark-bg-100 bg-light-bg-100">
+      <Box className="mb-12 gap-5">
+        <View
+          className="flex-row justify-between items-center p-7 mx-5 rounded-3xl           dark:bg-dark-primary-100 bg-light-primary-100
+        "
         >
-          {pendingTodos.length > 0 ? (
-            pendingTodos.reverse().map(
-              (todo, i) =>
-                !todo.completed && (
-                  <TouchableOpacity
-                    key={i}
-                    activeOpacity={0.75}
-                    onPress={() =>
-                      router.push(
-                        "/taskPreview?taskGroup=" +
-                          todo.taskGroup +
-                          "&taskTitle=" +
-                          todo.taskTitle +
-                          "&notificationId=" +
-                          todo.notificationId +
-                          "&taskId=" +
-                          todo.taskId +
-                          "&taskDescription=" +
-                          todo.taskDescription +
-                          "&dueDate=" +
-                          todo.dueDate +
-                          (todo.logo
-                            ? "&logo=" + encodeURIComponent(todo.logo)
-                            : "")
-                      )
-                    }
-                  >
-                    <PendingTaskCard
-                      dark={colorScheme === "dark"}
-                      taskId={todo.taskId}
-                      notificationId={todo.notificationId}
-                      taskGroup={todo.taskGroup}
-                      title={todo.taskTitle}
-                      logo={todo.logo && todo.logo}
-                      dueDate={todo.dueDate}
-                    />
-                  </TouchableOpacity>
-                )
-            )
-          ) : (
-            <Text
-              className={`text-center ${
-                colorScheme === "dark"
-                  ? "text-dark-text-200/70"
-                  : "text-light-text-200/70"
-              } text-lg font-spaceMono`}
-            >
-              No Pending tasks!
+          <View className="items-start gap-5">
+            <Text className="text-dark-text-100 text-lg font-Montserrat">
+              {todaysTasksProgress < 0.5
+                ? "Your today's tasks are\npending!"
+                : "Your today's are\nalmost done!"}
             </Text>
-          )}
-        </ScrollView>
-      </View>
 
-      <View className="space-y-3">
-        <View className="flex-row justify-between items-center pr-7">
-          <View className="flex-row items-center gap-2">
-            <Text
-              className={`text-2xl font-spaceMono ${
-                colorScheme === "dark"
-                  ? "text-dark-text-200"
-                  : "text-light-text-200"
-              }`}
+            <Button
+              variant="solid"
+              size="lg"
+              action="primary"
+              onPress={() => router.push("/todaysTasks")}
+              className="rounded-xl dark:bg-primary-300 bg-primary-500 px-10 py-2"
             >
-              Task Groups
+              <ButtonText className="text-typography-0 font-spaceMono">
+                View
+              </ButtonText>
+            </Button>
+          </View>
+
+          <CircularProgress
+            progress={todaysTasksProgress}
+            circleColor={"#e0e0e050"}
+            strokeColor={"#e0e0e0"}
+            size={100}
+            strokeWidth={10}
+          />
+        </View>
+
+        <View>
+          <View className="flex-row items-center gap-2 px-5">
+            <Text className="text-2xl font-spaceMono dark:text-dark-text-200 text-light-text-200">
+              Pending
             </Text>
-            <Text
-              className={`text-sm text-center ${
-                colorScheme === "dark"
-                  ? "bg-dark-primary-300 text-light-text-200"
-                  : "bg-light-primary-300 text-dark-text-200"
-              } rounded-lg w-5 h-5`}
-            >
-              {taskGroups.length}
+
+            <Text className="text-sm text-center dark:bg-dark-primary-300 dark:text-light-text-200 bg-light-primary-300 text-dark-text-200 rounded-lg w-5 h-5">
+              {pendingTodos.length}
             </Text>
           </View>
 
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => setShowModal(true)}
-            className="p-1"
-          >
-            <Plus
-              size={20}
-              color={colorScheme === "dark" ? "white" : "black"}
-            />
-          </TouchableOpacity>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <HStack space="md" className="flex-row items-center p-5">
+              {pendingTodos.length > 0 ? (
+                pendingTodos
+                  .reverse()
+                  .map(
+                    (todo, i) =>
+                      !todo.completed && (
+                        <PendingTaskCard
+                          key={i}
+                          taskId={todo.taskId}
+                          notificationId={todo.notificationId}
+                          taskGroup={todo.taskGroup}
+                          taskTitle={todo.taskTitle}
+                          taskDescription={todo.taskDescription}
+                          logo={todo.logo && todo.logo}
+                          dueDate={todo.dueDate}
+                        />
+                      )
+                  )
+              ) : (
+                <Text className="text-center dark:text-dark-text-200/70 text-light-text-200/70 text-lg font-spaceMono">
+                  No Pending tasks!
+                </Text>
+              )}
+            </HStack>
+          </ScrollView>
         </View>
 
-        <View style={{ gap: 10, paddingRight: 20 }}>
-          {taskGroups.length === 0 ? (
-            <Text
-              className={`${
-                colorScheme === "dark"
-                  ? "text-dark-text-200/70"
-                  : "text-light-text-200/70"
-              } text-lg font-spaceMono`}
-            >
-              No Task Groups
-            </Text>
-          ) : (
-            taskGroups
-              .reverse()
-              .map((group, i) => (
-                <TaskGroupCard
-                  key={i}
-                  title={group.name}
-                  img={group.img}
-                  tasks={
-                    todos.filter((todo) => todo.taskGroup === group.name).length
-                  }
-                  progress={groupProgress(group)}
-                  handleRemoveTaskGroup={handleRemoveTaskGroup}
-                />
-              ))
-          )}
+        <View className="gap-3 px-5">
+          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center gap-2">
+              <Text className="text-2xl font-spaceMono dark:text-dark-text-200 text-light-text-200">
+                Task Lists
+              </Text>
+              <Text className="text-sm text-center dark:bg-dark-primary-300 dark:text-light-text-200 bg-light-primary-300 text-dark-text-200 rounded-lg w-5 h-5">
+                {taskGroups.length}
+              </Text>
+            </View>
+          </View>
+
+          <VStack space="md">
+            {taskGroups.length === 0 ? (
+              <Text className="dark:text-dark-text-200/70 text-light-text-200/70 text-lg font-spaceMono">
+                No Task Lists!
+              </Text>
+            ) : (
+              taskGroups
+                .reverse()
+                .map((group, i) => (
+                  <TaskGroupCard
+                    key={i}
+                    title={group.name}
+                    img={group.img}
+                    tasks={
+                      todos.filter((todo) => todo.taskGroup === group.name)
+                        .length
+                    }
+                    progress={groupProgress(group)}
+                    handleRemoveTaskGroup={handleRemoveTaskGroup}
+                  />
+                ))
+            )}
+          </VStack>
         </View>
-
-        <View className="bottom_tabs_safe_area h-[35px]" />
-      </View>
-
-      <NewTaskGroup visible={showModal} setVisible={setShowModal} />
+      </Box>
     </ScrollView>
   );
 }

@@ -1,35 +1,34 @@
-import {
-  View,
-  Text,
-  useColorScheme,
-  TouchableOpacity,
-  Alert,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useContext } from "react";
-import TaskDetailsPreview from "@/components/TaskDetailsPreview";
+import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { ArrowLeft, Trash2 } from "lucide-react-native";
-import { decodeUri } from "@/utils/decodeUri";
+import { decodeImgUri } from "@/utils/decodeImgUri";
 import TodosContext from "@/context/userTodos";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import cancelNotification from "@/utils/cancelNotifications";
 import { TaskProps } from "@/types/taskProps";
+import { useColorScheme } from "nativewind";
+import { useAlertDialog } from "@/hooks/useAlertDialog";
 
 const TaskPreview = () => {
-  const dark = useColorScheme() === "dark";
-  const {
-    notificationId,
-    taskId,
-    taskGroup,
-    taskTitle,
-    taskDescription,
-    dueDate,
-    logo,
-  } = useLocalSearchParams();
+  const dark = useColorScheme().colorScheme === "dark";
+  const params = useLocalSearchParams();
   const navigation = useNavigation();
-  const decodedLogo = logo ? decodeUri(logo as string) : undefined;
+  const alertDialog = useAlertDialog();
   const { todos, setTodos } = useContext(TodosContext);
+
+  const dueDate = params.dueDate
+    ? JSON.parse(decodeURIComponent(params.dueDate as string))
+    : undefined;
+  const taskId = params.taskId as string;
+  const notificationId = params.notificationId as string;
+  const taskGroup = decodeURIComponent(params.taskGroup as string);
+  const taskTitle = decodeURIComponent(params.taskTitle as string);
+  const taskDescription = decodeURIComponent(params.taskDescription as string);
+  const decodedLogo = params.logo
+    ? decodeImgUri(params.logo as string)
+    : undefined;
 
   const handleDeleteTask = async () => {
     const newTasks = todos.filter((task: TaskProps) => task.taskId !== taskId);
@@ -42,9 +41,7 @@ const TaskPreview = () => {
 
   return (
     <ScrollView
-      className={`flex-1 p-5 pt-7 ${
-        dark ? "bg-dark-bg-100" : "bg-light-bg-100"
-      }`}
+      className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
       contentContainerStyle={{ gap: 20 }}
     >
       <View className="flex-row justify-between items-center">
@@ -65,15 +62,7 @@ const TaskPreview = () => {
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() =>
-            Alert.alert(`Sure want to delete this task?`, undefined, [
-              { text: "NO" },
-              {
-                text: "YES",
-                onPress() {
-                  handleDeleteTask();
-                },
-              },
-            ])
+            alertDialog.show("Delete Task?", handleDeleteTask, "", "Yes")
           }
         >
           <Trash2 size={24} color="#FF573380" className="mr-3" />
@@ -85,7 +74,7 @@ const TaskPreview = () => {
         taskGroup={taskGroup as string}
         taskTitle={taskTitle as string}
         taskDescription={taskDescription as string}
-        dueDate={dueDate as string}
+        dueDate={dueDate}
         logo={decodedLogo}
         type="preview"
       />

@@ -2,28 +2,42 @@
   "expo": {
     "name": "TaskLS",
     "slug": "taskls",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icons/icon.png",
     "scheme": "taskls",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#042131"
-    },
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.priyankg85.taskls"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#042131"
+        "foregroundImage": "./assets/icons/icon.png",
+        "backgroundColor": "#1b1b1b"
       },
       "package": "com.priyankg85.taskls"
     },
-    "plugins": ["expo-router"],
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/icons/icon.png"
+    },
+    "splash": {
+      "image": "./assets/icons/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#A9C1FF",
+      "dark": {
+        "image": "./assets/icons/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#1A1A2E"
+      },
+      "imageWidth": 300
+    },
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     },
@@ -35,6 +49,12 @@
         "projectId": "3b412207-fc3f-4d30-9d44-6722cd079df1"
       }
     },
-    "owner": "priyankg85"
+    "owner": "priyankg85",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3b412207-fc3f-4d30-9d44-6722cd079df1"
+    }
   }
 }

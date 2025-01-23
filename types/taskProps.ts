@@ -4,7 +4,7 @@ export type TaskProps = {
   taskGroup: string;
   taskTitle: string;
   taskDescription?: string;
-  dueDate?: string;
+  dueDate?: { date: string; time: string } | undefined;
   logo?: string;
   completed?: boolean;
 };
