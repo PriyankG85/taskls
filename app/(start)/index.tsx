@@ -1,13 +1,21 @@
+"use client";
+
+import GlassmorphicBackground from "@/components/global/GlassmorphicBackground";
+import { Box } from "@/components/ui/box";
+import { Input, InputField } from "@/components/ui/input";
 import UserContext from "@/context/userdetails";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { MotiView, useDynamicAnimation } from "moti";
+import { cssInterop } from "nativewind";
 import { useContext, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+
+cssInterop(Image, { className: "style" });
 
 const Start = () => {
-  const { setName: setNameContext } = useContext(UserContext);
+  const { setName: setNameInContext } = useContext(UserContext);
   const [name, setName] = useState("");
   const [warning, setWarning] = useState(false);
   const animationState = useDynamicAnimation();
@@ -29,7 +37,7 @@ const Start = () => {
         }, 75);
       }, 75);
     } else {
-      setNameContext(name);
+      setNameInContext(name);
       setDataToLocalStorage("name", name);
       setDataToLocalStorage(
         "taskGroups",
@@ -44,73 +52,86 @@ const Start = () => {
           },
         ])
       );
-      router.push("/(user)");
+      router.push("/(user)/(tabs)");
     }
   };
 
   return (
-    <View className="bg-light-bg-200 flex-1 items-center pt-[25%] gap-14 font-spaceMono">
-      <MotiView
-        from={{
-          scale: 0.5,
-        }}
-        animate={{
-          scale: 1,
-        }}
-        transition={{
-          type: "timing",
-        }}
-        className="w-full h-[40%] items-end"
-      >
-        <Image
-          source={require("@/assets/images/start_bg.svg")}
-          contentFit="contain"
-          className="w-[90%] h-full"
-          priority="high"
-        />
-      </MotiView>
-
-      <View className="items-center">
-        <Text className="text-3xl font-Karma leading-[42px]">Task List</Text>
-        <Text className="text-base font-Montserrat">
-          Manage your tasks and ideas with ease
-        </Text>
-      </View>
-
-      <View className="w-[70%]">
+    <GlassmorphicBackground
+      gradientColors={["#002855", "#4c669f"]}
+      blurIntensity={70}
+    >
+      <Box className="flex-1 items-center pt-[13vh] gap-14 font-spaceMono">
         <MotiView
-          state={animationState}
-          transition={{
-            type: "spring",
+          from={{
+            scale: 0.75,
           }}
+          animate={{
+            scale: 1,
+          }}
+          transition={{
+            type: "timing",
+          }}
+          className="w-full h-[40%] items-center justify-center"
         >
-          <TextInput
-            value={name}
-            onChangeText={(text) => {
-              setWarning(false);
-              setName(text);
-            }}
-            placeholder="Your Name"
-            placeholderTextColor="white"
-            className={`h-[55px] bg-light-bg-300 text-white text-center text-base rounded-[10px] p-2 ${
-              warning && "border-red-500 border-2"
-            }`}
+          <Image
+            source={require("@/assets/images/tasks-illustration.png")}
+            contentFit="contain"
+            className="size-full"
+            priority="high"
           />
         </MotiView>
-        {warning && (
-          <Text className="text-red-500 ml-2 text-sm font-Montserrat">
-            Please enter your name first
-          </Text>
-        )}
-      </View>
 
-      <Pressable
-        onPress={handleSetup}
-        className="bg-dark-bg-300 text-base rounded-2xl px-10 py-4"
-      >
-        <Text className="font-spaceMono text-base text-white">Continue</Text>
-      </Pressable>
-    </View>
+        <View className="items-center">
+          <Text className="text-3xl text-typography-white font-Metamorphous leading-[42px]">
+            Task List
+          </Text>
+          <Text className="text-base text-typography-white font-Quattrocento">
+            Manage your tasks and ideas with ease
+          </Text>
+        </View>
+
+        <View className="w-[70%] gap-2">
+          <MotiView
+            state={animationState}
+            transition={{
+              type: "spring",
+            }}
+          >
+            <Input
+              className={`h-[55px] bg-[##DCDBDB] rounded-2xl shadow shadow-black p-2 ${
+                warning && "border-error-200 border-2 shadow-error-500"
+              }`}
+            >
+              <InputField
+                value={name}
+                onChangeText={(text) => {
+                  setWarning(false);
+                  setName(text);
+                }}
+                autoCapitalize="words"
+                textAlign="center"
+                placeholder="Your Name"
+                className="text-lg text-center font-roboto text-typography-black"
+              />
+            </Input>
+          </MotiView>
+          {warning && (
+            <Text className="text-error-50 ml-2 text-sm font-Montserrat">
+              Please enter your name first
+            </Text>
+          )}
+        </View>
+
+        <Pressable
+          android_ripple={{ color: "#00285550", radius: 70 }}
+          onPress={handleSetup}
+          className="bg-dark-bg-300 text-base rounded-2xl overflow-hidden shadow shadow-black px-10 py-4"
+        >
+          <Text className="font-spaceMono text-base text-white">Continue</Text>
+        </Pressable>
+      </Box>
+    </GlassmorphicBackground>
   );
 };
 

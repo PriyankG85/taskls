@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "spaceMono", sans-serif;
+  }
+
+  body {
+    @apply bg-light-bg-100 dark:bg-dark-bg-100 text-light-text-100 dark:text-dark-text-100;
+  }
+}

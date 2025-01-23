@@ -1,23 +1,32 @@
 import { useFonts } from "expo-font";
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { Appearance, ColorSchemeName } from "react-native";
 import { useEffect, useState } from "react";
 import { getDataFromLocalStorage } from "@/hooks/useHandleLocalStorage";
 import * as Notifications from "expo-notifications";
 import UserContext from "@/context/userdetails";
 import { StatusBar } from "expo-status-bar";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import "@/styles/global.css";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
 
 const RootLayout = () => {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     SpaceMonoBold: require("../assets/fonts/SpaceMono-Bold.ttf"),
-    Karma: require("../assets/fonts/Karma-Bold.ttf"),
     MontserratAlternates: require("../assets/fonts/MontserratAlternates-Regular.ttf"),
+    Metamorphous: require("../assets/fonts/Metamorphous.ttf"),
+    Quattrocento: require("../assets/fonts/Quattrocento-Sans.ttf"),
   });
   const [name, setName] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
+
   const router = useRouter();
   const segments = useSegments();
 
@@ -31,13 +40,15 @@ const RootLayout = () => {
 
     const getTheme = async () => {
       const theme = await getDataFromLocalStorage("theme");
-      if (theme === "dark" || theme === "light")
-        Appearance.setColorScheme(theme as unknown as ColorSchemeName);
+
+      if (theme !== null) {
+        setTheme(theme as "light" | "dark" | "system");
+      }
     };
 
     getTheme();
 
-    if (loaded) {
+    if (loaded && theme) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
@@ -48,9 +59,9 @@ const RootLayout = () => {
     const inAuthGroup = segments[0] === "(start)";
 
     if (name && inAuthGroup) {
-      router.replace("/(user)");
+      router.replace("/(user)/(tabs)");
     } else if (!name && !inAuthGroup) {
-      router.replace("/(start)");
+      router.replace("/");
     }
   }, [name, loaded, segments]);
 
@@ -59,16 +70,15 @@ const RootLayout = () => {
   }
 
   return (
-    <UserContext.Provider
-      value={{
-        name: name!,
-        setName: setName,
-      }}
-    >
-      <StatusBar style="dark" />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <UserContext.Provider value={{ name, setName, theme, setTheme }}>
+        <GluestackUIProvider mode={theme}>
+          <StatusBar style="light" />
 
-      <Slot screenOptions={{ headerShown: false }} />
-    </UserContext.Provider>
+          <Slot screenOptions={{ headerShown: false }} />
+        </GluestackUIProvider>
+      </UserContext.Provider>
+    </GestureHandlerRootView>
   );
 };
 

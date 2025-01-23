@@ -1,29 +1,28 @@
 import {
   View,
   Text,
-  useColorScheme,
   ScrollView,
   Pressable,
   TouchableOpacity,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
-import TodaysTaskCard from "@/components/TaskCard";
+import TodaysTaskCard from "@/components/tabs/TaskCard";
 import TodosContext from "@/context/userTodos";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { TaskProps } from "@/types/taskProps";
+import { useColorScheme } from "nativewind";
 
 const TodaysTasks = () => {
-  const dark = useColorScheme() === "dark";
+  const dark = useColorScheme().colorScheme === "dark";
   const today = new Date().toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     weekday: "short",
   });
   const { todos }: { todos: TaskProps[] } = useContext(TodosContext);
-  const todaysTodos = todos.filter((todo) => todo.dueDate === today);
+  const todaysTodos = todos.filter((todo) => todo.dueDate?.date === today);
   const [selected, setSelected] = useState("All");
   const [todosToDisplay, setTodosToDisplay] = useState(todaysTodos);
-  const router = useRouter();
 
   useEffect(() => {
     setTodosToDisplay(todaysTodos);
@@ -43,21 +42,17 @@ const TodaysTasks = () => {
 
   return (
     <ScrollView
-      className={`flex-1 pt-7 ${dark ? "bg-dark-bg-100" : "bg-light-bg-100"}`}
+      className="flex-1 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
       contentContainerStyle={{ gap: 25 }}
     >
       <View className="gap-1 px-5">
         <Text
-          className={`font-Montserrat text-3xl ${
-            dark ? "text-dark-text-100" : "text-light-text-100"
-          }`}
+          className={`font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100`}
         >
           Today's Tasks
         </Text>
         <Text
-          className={`text-xl ${
-            dark ? "text-blue-500" : "text-blue-600"
-          } font-spaceMonoBold`}
+          className={`text-xl dark:text-blue-500 text-blue-600 font-spaceMonoBold`}
         >
           {today}
         </Text>
@@ -71,15 +66,13 @@ const TodaysTasks = () => {
         {["All", "In Progress", "Completed"].map((item) => (
           <Pressable
             key={item}
-            className={`rounded-lg ${
-              dark ? "bg-dark-bg-200" : "bg-light-bg-200"
-            } px-7 py-2 ${selected === item && "bg-blue-500/80"}`}
+            className="rounded-lg bg-background-0 px-7 py-2"
             onPress={() => setSelected(item)}
           >
             <Text
-              className={`text-base font-semibold ${
-                dark ? "text-dark-text-200/70" : "text-light-text-200/70"
-              } ${selected === item && "text-white"}`}
+              className={`text-base font-roboto text-typography-400 ${
+                selected === item && "text-typography-900 font-extrabold"
+              }`}
             >
               {item}
             </Text>
@@ -87,7 +80,7 @@ const TodaysTasks = () => {
         ))}
       </ScrollView>
 
-      <View style={{ gap: 10, paddingHorizontal: 20 }}>
+      <View className="gap-[10px] px-5">
         {todaysTodos.length === 0 ? (
           <Text
             className={`text-lg text-center ${
@@ -111,19 +104,19 @@ const TodaysTasks = () => {
               activeOpacity={0.75}
               onPress={() =>
                 router.push(
-                  "/taskPreview?taskGroup=" +
-                    todo.taskGroup +
-                    "&taskTitle=" +
-                    todo.taskTitle +
-                    "&taskId=" +
-                    todo.taskId +
-                    "&notificationId=" +
-                    todo.notificationId +
+                  `/taskPreview?taskGroup=${encodeURIComponent(
+                    todo.taskGroup
+                  )}&taskTitle=${encodeURIComponent(todo.taskTitle)}&taskId=${
+                    todo.taskId
+                  }&notificationId=${todo.notificationId}${
+                    todo.taskDescription &&
                     "&taskDescription=" +
-                    todo.taskDescription +
+                      encodeURIComponent(todo.taskDescription as string)
+                  }${
+                    todo.dueDate &&
                     "&dueDate=" +
-                    todo.dueDate +
-                    (todo.logo ? "&logo=" + encodeURIComponent(todo.logo) : "")
+                      encodeURIComponent(JSON.stringify(todo.dueDate))
+                  }${todo.logo && "&logo=" + encodeURIComponent(todo.logo)}`
                 )
               }
             >

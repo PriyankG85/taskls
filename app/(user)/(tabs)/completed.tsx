@@ -1,19 +1,12 @@
-import {
-  View,
-  Text,
-  useColorScheme,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import React, { useContext } from "react";
 import TodosContext from "@/context/userTodos";
-import TaskCard from "@/components/TaskCard";
+import TaskCard from "@/components/tabs/TaskCard";
 import { useRouter } from "expo-router";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { TaskProps } from "@/types/taskProps";
 
 const Completed = () => {
-  const dark = useColorScheme() === "dark";
   const router = useRouter();
   const {
     todos,
@@ -29,17 +22,9 @@ const Completed = () => {
   };
 
   return (
-    <ScrollView
-      className={`flex-1 p-5 pt-10 gap-5 ${
-        dark ? "bg-dark-bg-100" : "bg-light-bg-100"
-      }`}
-    >
+    <ScrollView className="flex-1 p-5 pt-10 dark:bg-dark-bg-100 bg-light-bg-100">
       <View className="flex-row items-center justify-between">
-        <Text
-          className={`font-Montserrat text-3xl ${
-            dark ? "text-dark-text-100" : "text-light-text-100"
-          }`}
-        >
+        <Text className={`font-Montserrat text-3xl text-typography-950`}>
           Completed Tasks
         </Text>
         <TouchableOpacity
@@ -48,24 +33,16 @@ const Completed = () => {
           activeOpacity={0.7}
           disabled={completedTodos.length === 0}
         >
-          <Text
-            className={`text-sm font-spaceMono ${
-              dark ? "text-dark-text-200/90" : "text-light-text-200/90"
-            }`}
-          >
+          <Text className="text-base font-roboto text-typography-500">
             Clear
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View className="space-y-2">
+      <View className="gap-y-2 mt-5">
         {completedTodos.length === 0 ? (
-          <Text
-            className={`text-lg ${
-              dark ? "text-dark-text-200/60" : "text-light-text-200/60"
-            }`}
-          >
-            No completed Tasks found!
+          <Text className={`text-lg text-typography-500`}>
+            No tasks completed!
           </Text>
         ) : (
           completedTodos.map((todo) => (
@@ -74,19 +51,19 @@ const Completed = () => {
               activeOpacity={0.75}
               onPress={() =>
                 router.push(
-                  "/taskPreview?taskGroup=" +
-                    todo.taskGroup +
-                    "&taskTitle=" +
-                    todo.taskTitle +
-                    "&notificationId=" +
-                    todo.notificationId +
-                    "&taskId=" +
-                    todo.taskId +
+                  `/taskPreview?taskGroup=${encodeURIComponent(
+                    todo.taskGroup
+                  )}&taskTitle=${encodeURIComponent(todo.taskTitle)}&taskId=${
+                    todo.taskId
+                  }&notificationId=${todo.notificationId}${
+                    todo.taskDescription &&
                     "&taskDescription=" +
-                    todo.taskDescription +
+                      encodeURIComponent(todo.taskDescription as string)
+                  }${
+                    todo.dueDate &&
                     "&dueDate=" +
-                    todo.dueDate +
-                    (todo.logo ? "&logo=" + encodeURIComponent(todo.logo) : "")
+                      encodeURIComponent(JSON.stringify(todo.dueDate))
+                  }${todo.logo && "&logo=" + encodeURIComponent(todo.logo)}`
                 )
               }
             >
