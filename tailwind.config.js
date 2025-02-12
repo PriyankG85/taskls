@@ -185,7 +185,7 @@ module.exports = {
           success: "rgb(var(--color-background-success)/<alpha-value>)",
           info: "rgb(var(--color-background-info)/<alpha-value>)",
           light: "#FBFBFB",
-          dark: "#181719",
+          dark: "#1b1b1b",
         },
         indicator: {
           primary: "rgb(var(--color-indicator-primary)/<alpha-value>)",

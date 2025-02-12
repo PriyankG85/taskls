@@ -15,7 +15,6 @@ import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import * as Notifications from "expo-notifications";
 import UserContext from "@/context/userdetails";
 import { useColorScheme } from "nativewind";
-import { Divider } from "@/components/ui/divider";
 
 const Settings = () => {
   const colorScheme = useColorScheme();

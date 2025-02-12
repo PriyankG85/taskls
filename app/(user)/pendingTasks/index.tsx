@@ -1,0 +1,72 @@
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useContext } from "react";
+import TodosContext from "@/context/userTodos";
+import { TaskProps } from "@/types/taskProps";
+import TaskCard from "@/components/taskInGroup/TaskCard";
+import { router, useLocalSearchParams } from "expo-router";
+import { VStack } from "@/components/ui/vstack";
+import { Box } from "@/components/ui/box";
+import { FileQuestion } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
+import { Image } from "expo-image";
+import { TaskGroup } from "@/types/taskGroupProps";
+import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
+
+const PendingTasks = () => {
+  const { todos } = useContext<{
+    todos: TaskProps[];
+    setTodos: React.Dispatch<React.SetStateAction<TaskProps[]>>;
+  }>(TodosContext);
+  const pendingTodos = todos.filter((todo) => !todo.completed);
+
+  return (
+    <ScrollView className="flex-1 p-5 pt-10 dark:bg-dark-bg-100 bg-light-bg-100">
+      <View className="flex-row gap-5 items-center mb-5">
+        <View className="gap-1">
+          <Text className="font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100">
+            Pending Tasks
+          </Text>
+          <Text className="font-Montserrat text-base dark:text-dark-accent-200 text-light-accent-200 ml-1">
+            {pendingTodos.length} tasks pending
+          </Text>
+        </View>
+      </View>
+
+      <VStack space="md">
+        {pendingTodos.map((todo) => (
+          <TaskControlsMenuWrapper
+            key={todo.taskId}
+            taskId={todo.taskId}
+            activeOpacity={0.75}
+            onPress={() =>
+              router.push({
+                pathname: "/taskPreview",
+                params: {
+                  taskGroup: todo.taskGroup,
+                  taskTitle: todo.taskTitle,
+                  taskId: todo.taskId,
+                  notificationId: todo.notificationId,
+                  taskDescription: todo.taskDescription,
+                  dueDate: JSON.stringify(todo.dueDate),
+                  logo: todo.logo,
+                },
+              })
+            }
+          >
+            <TaskCard
+              taskId={todo.taskId}
+              notificationId={todo.notificationId}
+              taskTitle={todo.taskTitle}
+              dueDate={todo.dueDate}
+              taskDescription={todo.taskDescription}
+              taskGroup={todo.taskGroup}
+              completed={todo.completed}
+            />
+          </TaskControlsMenuWrapper>
+        ))}
+      </VStack>
+    </ScrollView>
+  );
+};
+
+export default PendingTasks;

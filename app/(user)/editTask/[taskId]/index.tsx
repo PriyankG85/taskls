@@ -5,17 +5,19 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
+  ToastAndroid,
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react-native";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import TodosContext from "@/context/userTodos";
 import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import { useColorScheme } from "nativewind";
+import { TaskProps } from "@/types/taskProps";
+import cancelNotification from "@/utils/cancelNotifications";
 
 interface TaskGroupProps {
   name: string;
@@ -26,27 +28,50 @@ Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: false,
+    shouldSetBadge: true,
   }),
 });
 
-const AddTask = () => {
-  const dark = useColorScheme().colorScheme === "dark";
-  const { todos, setTodos } = useContext(TodosContext);
-  const { taskGroups } = useContext(TodosContext);
+const EditTask = () => {
+  const { taskId } = useLocalSearchParams();
 
-  const [taskGroup, setTaskGroup] = useState(taskGroups[0].name);
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskDescription, setTaskDescription] = useState("");
+  const dark = useColorScheme().colorScheme === "dark";
+  const { todos, setTodos } = useContext<{
+    todos: TaskProps[];
+    setTodos: React.Dispatch<React.SetStateAction<TaskProps[]>>;
+  }>(TodosContext);
+  const { taskGroups } = useContext(TodosContext);
+  const taskToEdit = todos.find((todo: TaskProps) => todo.taskId === taskId);
+
+  // Handle the case where taskToEdit is not found
+  if (!taskToEdit) {
+    console.warn(`Task with id ${taskId} not found!`);
+    return null;
+  }
+
+  const [taskGroup, setTaskGroup] = useState(taskToEdit.taskGroup);
+  const [taskTitle, setTaskTitle] = useState(taskToEdit.taskTitle);
+  const [taskDescription, setTaskDescription] = useState(
+    taskToEdit.taskDescription
+  );
+
+  const initialDate = taskToEdit.dueDate?.date
+    ? new Date(taskToEdit.dueDate.date)
+    : new Date();
+  const initialTime = taskToEdit.dueDate?.time
+    ? taskToEdit.dueDate.time
+    : new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+      });
+
   const [dueDate, setDueDate] = useState({
-    date: new Date(),
-    time: new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-    }),
+    date: initialDate,
+    time: initialTime,
   });
+
   const [logo, setLogo] = useState<string | undefined>();
-  const [checked, setChecked] = useState(true);
+  const [checked, setChecked] = useState(!!taskToEdit.dueDate);
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
@@ -68,7 +93,7 @@ const AddTask = () => {
     );
   }, [taskGroup]);
 
-  const handleAddTask = async () => {
+  const handleSaveTask = async () => {
     if (taskTitle === "") {
       taskTitleContainerRef.current?.setNativeProps({
         style: {
@@ -80,64 +105,83 @@ const AddTask = () => {
       return;
     }
 
-    let identifier = null;
+    if (
+      dueDate.date.toString() === "Invalid Date" ||
+      dueDate.time === "Invalid Date"
+    ) {
+      ToastAndroid.show("Please select a date and time.", 5);
+      return;
+    }
+
+    // Cancel Previous Notification
+    await cancelNotification(taskToEdit?.notificationId);
 
     // Scheduling Notifications
+    let identifier = null;
     if (checked) {
-      dueDate.date.setHours(new Date().getHours());
-      dueDate.date.setMinutes(new Date().getMinutes());
-      identifier = await scheduleNotification(
+      const notificationId = await scheduleNotification(
         taskTitle,
         taskDescription,
         dueDate.date,
         dueDate.time
       );
+      identifier = notificationId;
     }
 
     // Saving Task to Local Storage
-    const taskDetails = {
+    const newTaskDetails = {
       taskId: new Date().getTime().toString(),
-      notificationId: identifier,
+      notificationId: identifier === null ? undefined : identifier,
       taskGroup,
       taskTitle,
       taskDescription,
       dueDate: checked
         ? {
-            date: dueDate.date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              weekday: "short",
-            }),
+            date: dueDate.date.toISOString(),
             time: dueDate.time,
           }
         : undefined,
       logo,
     };
-    const tasks = [...todos, taskDetails];
-    const dataString = JSON.stringify(tasks);
+    const editedTasks = todos.map((todo) =>
+      todo.taskId === taskId ? newTaskDetails : todo
+    );
+    const dataString = JSON.stringify(editedTasks);
 
     setDataToLocalStorage("todos", dataString);
-    setTodos(tasks);
+    setTodos(editedTasks);
 
     navigation.goBack();
+  };
+
+  const checkTaskModified = () => {
+    if (
+      taskTitle !== taskToEdit.taskTitle ||
+      taskDescription !== taskToEdit.taskDescription ||
+      dueDate.date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        weekday: "short",
+      }) !== taskToEdit.dueDate?.date ||
+      dueDate.time !== taskToEdit.dueDate?.time ||
+      logo !== taskToEdit.logo ||
+      taskGroup !== taskToEdit.taskGroup
+    ) {
+      return true;
+    }
+    return false;
   };
 
   return (
     <ScrollView className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100">
       <View style={{ gap: 20 }}>
-        <View className="flex-row gap-3 items-center">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft size={28} color={dark ? "white" : "black"} />
-          </TouchableOpacity>
-
-          <Text
-            className={`font-Montserrat text-3xl ${
-              dark ? "text-dark-text-100" : "text-light-text-100"
-            }`}
-          >
-            New Task
-          </Text>
-        </View>
+        <Text
+          className={`font-Montserrat text-3xl ${
+            dark ? "text-dark-text-100" : "text-light-text-100"
+          }`}
+        >
+          Edit Task
+        </Text>
 
         <TaskDetailsPreview
           dark={dark}
@@ -167,22 +211,21 @@ const AddTask = () => {
 
       <TouchableOpacity
         activeOpacity={0.75}
-        className="py-4 my-14 rounded-xl bg-dark-accent-100"
-        onPress={handleAddTask}
+        className="py-4 my-14 rounded-xl bg-dark-accent-100 disabled:opacity-70"
+        onPress={handleSaveTask}
+        disabled={!checkTaskModified()}
       >
         <Text className="text-dark-text-100 text-xl text-center font-extrabold">
-          Add Task
+          Save Task
         </Text>
       </TouchableOpacity>
     </ScrollView>
   );
 };
 
-export default AddTask;
-
 async function scheduleNotification(
   title: string,
-  body: string,
+  body: string | undefined,
   dueDate: Date,
   time: string
 ) {
@@ -246,3 +289,5 @@ async function registerForPushNotificationsAsync() {
 
   return token;
 }
+
+export default EditTask;

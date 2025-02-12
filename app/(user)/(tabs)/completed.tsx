@@ -5,6 +5,7 @@ import TaskCard from "@/components/tabs/TaskCard";
 import { useRouter } from "expo-router";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { TaskProps } from "@/types/taskProps";
+import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
 
 const Completed = () => {
   const router = useRouter();
@@ -46,25 +47,23 @@ const Completed = () => {
           </Text>
         ) : (
           completedTodos.map((todo) => (
-            <TouchableOpacity
+            <TaskControlsMenuWrapper
               key={todo.taskId}
+              taskId={todo.taskId}
               activeOpacity={0.75}
               onPress={() =>
-                router.push(
-                  `/taskPreview?taskGroup=${encodeURIComponent(
-                    todo.taskGroup
-                  )}&taskTitle=${encodeURIComponent(todo.taskTitle)}&taskId=${
-                    todo.taskId
-                  }&notificationId=${todo.notificationId}${
-                    todo.taskDescription &&
-                    "&taskDescription=" +
-                      encodeURIComponent(todo.taskDescription as string)
-                  }${
-                    todo.dueDate &&
-                    "&dueDate=" +
-                      encodeURIComponent(JSON.stringify(todo.dueDate))
-                  }${todo.logo && "&logo=" + encodeURIComponent(todo.logo)}`
-                )
+                router.push({
+                  pathname: "/taskPreview",
+                  params: {
+                    taskGroup: todo.taskGroup,
+                    taskTitle: todo.taskTitle,
+                    taskId: todo.taskId,
+                    notificationId: todo.notificationId,
+                    taskDescription: todo.taskDescription,
+                    dueDate: JSON.stringify(todo.dueDate),
+                    logo: todo.logo,
+                  },
+                })
               }
             >
               <TaskCard
@@ -76,7 +75,7 @@ const Completed = () => {
                 taskGroup={todo.taskGroup}
                 completed={todo.completed}
               />
-            </TouchableOpacity>
+            </TaskControlsMenuWrapper>
           ))
         )}
       </View>

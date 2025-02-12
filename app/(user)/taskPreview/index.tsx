@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useContext } from "react";
 import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import { ArrowLeft, Trash2 } from "lucide-react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { Trash2 } from "lucide-react-native";
 import { decodeImgUri } from "@/utils/decodeImgUri";
 import TodosContext from "@/context/userTodos";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
@@ -10,32 +10,42 @@ import cancelNotification from "@/utils/cancelNotifications";
 import { TaskProps } from "@/types/taskProps";
 import { useColorScheme } from "nativewind";
 import { useAlertDialog } from "@/hooks/useAlertDialog";
+import { handleDeleteTask } from "@/utils/handleTask";
+import parseDateString from "@/utils/parseDateString";
 
 const TaskPreview = () => {
   const dark = useColorScheme().colorScheme === "dark";
   const params = useLocalSearchParams();
-  const navigation = useNavigation();
   const alertDialog = useAlertDialog();
   const { todos, setTodos } = useContext(TodosContext);
 
-  const dueDate = params.dueDate
+  const unformattedDueDate = params.dueDate
     ? JSON.parse(decodeURIComponent(params.dueDate as string))
     : undefined;
+  const dueDate = unformattedDueDate
+    ? {
+        date: new Date(unformattedDueDate.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          weekday: "short",
+        }),
+        time: unformattedDueDate.time,
+      }
+    : undefined;
+
   const taskId = params.taskId as string;
   const notificationId = params.notificationId as string;
   const taskGroup = decodeURIComponent(params.taskGroup as string);
   const taskTitle = decodeURIComponent(params.taskTitle as string);
-  const taskDescription = decodeURIComponent(params.taskDescription as string);
+  const taskDescription = params.taskDescription
+    ? decodeURIComponent(params.taskDescription as string)
+    : undefined;
   const decodedLogo = params.logo
     ? decodeImgUri(params.logo as string)
     : undefined;
 
-  const handleDeleteTask = async () => {
-    const newTasks = todos.filter((task: TaskProps) => task.taskId !== taskId);
-
-    setTodos(newTasks);
-    await cancelNotification(notificationId as string);
-    setDataToLocalStorage("todos", JSON.stringify(newTasks));
+  const handleRemoveTask = async () => {
+    await handleDeleteTask(todos, setTodos, taskId, notificationId);
     router.back();
   };
 
@@ -45,24 +55,17 @@ const TaskPreview = () => {
       contentContainerStyle={{ gap: 20 }}
     >
       <View className="flex-row justify-between items-center">
-        <View className="flex-row gap-3 items-center">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft size={28} color={dark ? "white" : "black"} />
-          </TouchableOpacity>
-
-          <Text
-            className={`font-Montserrat text-3xl ${
-              dark ? "text-dark-text-100" : "text-light-text-100"
-            }`}
-          >
-            Task Preview
-          </Text>
-        </View>
-
+        <Text
+          className={`font-Montserrat text-3xl ${
+            dark ? "text-dark-text-100" : "text-light-text-100"
+          }`}
+        >
+          Task Preview
+        </Text>
         <TouchableOpacity
           activeOpacity={0.5}
           onPress={() =>
-            alertDialog.show("Delete Task?", handleDeleteTask, "", "Yes")
+            alertDialog.show("Delete Task?", handleRemoveTask, "", "Yes")
           }
         >
           <Trash2 size={24} color="#FF573380" className="mr-3" />

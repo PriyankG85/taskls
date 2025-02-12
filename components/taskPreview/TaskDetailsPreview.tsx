@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { TaskGroup } from "@/types/taskGroupProps";
 import React, { useContext, useState } from "react";
 import { TextInput, Image } from "react-native";
@@ -14,7 +14,7 @@ interface TaskDetailsPreviewProps {
   type: "add" | "preview";
   taskGroup: string;
   taskTitle: string;
-  taskDescription: string;
+  taskDescription: string | undefined;
   dueDate: { date: string; time: string } | undefined;
   logo?: string;
   checked?: boolean;
@@ -156,23 +156,24 @@ const TaskDetailsPreview = ({
         <Text className={`dark:text-dark-text-200 text-light-text-200 text-sm`}>
           Task Description
         </Text>
-        <TextInput
-          multiline
-          numberOfLines={5}
-          textAlignVertical="top"
-          placeholder={
-            taskDescription === "" && type === "preview"
-              ? "No Description"
-              : "Task Description"
-          }
-          placeholderTextColor={dark ? "#ffffff50" : "#00000050"}
-          value={taskDescription}
-          onChangeText={setTaskDescription}
-          editable={type === "add"}
-          className={`${
-            dark ? "text-white" : "text-black"
-          } text-lg font-spaceMonoBold align-text-top`}
-        />
+        <ScrollView style={{ maxHeight: 180 }}>
+          <TextInput
+            multiline
+            textAlignVertical="top"
+            placeholder={
+              taskDescription === "" && type === "preview"
+                ? "No Description"
+                : "Task Description"
+            }
+            placeholderTextColor={dark ? "#ffffff50" : "#00000050"}
+            value={taskDescription}
+            onChangeText={setTaskDescription}
+            editable={type === "add"}
+            className={`${
+              dark ? "text-white" : "text-black"
+            } text-lg font-spaceMonoBold`}
+          />
+        </ScrollView>
       </View>
       <View
         className={`flex-row justify-between items-center p-4 rounded-xl dark:bg-dark-bg-300 bg-light-bg-300`}
@@ -197,9 +198,14 @@ const TaskDetailsPreview = ({
                   disabled={type === "preview"}
                   onPress={() =>
                     DateTimePickerAndroid.open({
+                      minimumDate: new Date(),
                       value: new Date(dueDate.date),
                       onChange: (event, selectedDate) => {
-                        if (selectedDate && setDueDate) {
+                        if (
+                          selectedDate &&
+                          selectedDate.toString() !== "Invalid Date" &&
+                          setDueDate
+                        ) {
                           setDueDate((prev) => ({
                             ...prev,
                             date: selectedDate,
@@ -224,8 +230,14 @@ const TaskDetailsPreview = ({
                   onPress={() =>
                     DateTimePickerAndroid.open({
                       value: new Date(dueDate.date),
+                      display: "spinner",
+                      minimumDate: new Date(),
                       onChange: (event, selectedDate) => {
-                        if (selectedDate && setDueDate) {
+                        if (
+                          selectedDate &&
+                          selectedDate.toString() !== "Invalid Date" &&
+                          setDueDate
+                        ) {
                           setDueDate((prev) => ({
                             ...prev,
                             time: selectedDate.toLocaleTimeString("en-US", {

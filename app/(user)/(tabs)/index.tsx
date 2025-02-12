@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import CircularProgress from "@/components/global/CircularProgress";
 import { router } from "expo-router";
 import PendingTaskCard from "@/components/home/PendingTaskCard";
@@ -12,35 +12,29 @@ import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
 import { VStack } from "@/components/ui/vstack";
 import { TaskGroup } from "@/types/taskGroupProps";
+import { Badge, BadgeIcon, BadgeText } from "@/components/ui/badge";
 
 export default function Home() {
-  const { todos, taskGroups, setTaskGroups } = useContext<{
+  const { todos, taskGroups } = useContext<{
     todos: TaskProps[];
     taskGroups: TaskGroup[];
-    setTaskGroups(groups: TaskGroup[]): void;
   }>(TodosContext);
 
   const pendingTodos = todos.filter(
     (todo: TaskProps) => todo.completed === false || !todo.completed
   );
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    weekday: "short",
+  const todaysTodos = todos.filter((todo) => {
+    const todayDate = new Date().toISOString().split("T")[0];
+    const taskDate = todo.dueDate?.date
+      ? todo.dueDate.date.split("T")[0]
+      : undefined;
+    return taskDate === todayDate;
   });
-  const todaysTodos = todos.filter((todo) => todo.dueDate?.date === today);
   const completedTodos = todaysTodos.filter((todo) => todo.completed === true);
   const todaysTasksProgress =
     todaysTodos.length > 0
       ? Number((completedTodos.length / todaysTodos.length).toFixed(2))
       : 1;
-
-  const handleRemoveTaskGroup = (name: string) => {
-    const newGroups = taskGroups.filter((group) => group.name !== name);
-
-    setTaskGroups(newGroups);
-    setDataToLocalStorage("taskGroups", JSON.stringify(newGroups));
-  };
 
   const groupProgress = (group: TaskGroup) => {
     let groupTasks = todos.filter((todo) => todo.taskGroup === group.name);
@@ -71,9 +65,9 @@ export default function Home() {
               size="lg"
               action="primary"
               onPress={() => router.push("/todaysTasks")}
-              className="rounded-xl dark:bg-primary-300 bg-primary-500 px-10 py-2"
+              className="rounded-xl dark:bg-dark-primary-200 bg-background-muted px-10 py-2"
             >
-              <ButtonText className="text-typography-0 font-spaceMono">
+              <ButtonText className="text-typography-950 font-spaceMono">
                 View
               </ButtonText>
             </Button>
@@ -89,14 +83,27 @@ export default function Home() {
         </View>
 
         <View>
-          <View className="flex-row items-center gap-2 px-5">
-            <Text className="text-2xl font-spaceMono dark:text-dark-text-200 text-light-text-200">
-              Pending
-            </Text>
+          <View className="flex-row justify-between items-center pl-5 pr-7">
+            <View className="flex-row items-center gap-2">
+              <Text className="text-2xl font-spaceMono dark:text-dark-text-200 text-light-text-200">
+                Pending
+              </Text>
 
-            <Text className="text-sm text-center dark:bg-dark-primary-300 dark:text-light-text-200 bg-light-primary-300 text-dark-text-200 rounded-lg w-5 h-5">
-              {pendingTodos.length}
-            </Text>
+              <Badge
+                size="sm"
+                className="dark:bg-dark-primary-300 bg-light-primary-300 rounded-lg"
+              >
+                <BadgeText className="text-xs dark:text-light-text-200 text-dark-text-200">
+                  {pendingTodos.length}
+                </BadgeText>
+              </Badge>
+            </View>
+
+            <Pressable onPress={() => router.push("/pendingTasks")}>
+              <Text className="text-typography-400 font-Quattrocento">
+                View all
+              </Text>
+            </Pressable>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -134,9 +141,15 @@ export default function Home() {
               <Text className="text-2xl font-spaceMono dark:text-dark-text-200 text-light-text-200">
                 Task Lists
               </Text>
-              <Text className="text-sm text-center dark:bg-dark-primary-300 dark:text-light-text-200 bg-light-primary-300 text-dark-text-200 rounded-lg w-5 h-5">
-                {taskGroups.length}
-              </Text>
+
+              <Badge
+                size="sm"
+                className="dark:bg-dark-primary-300 bg-light-primary-300 rounded-lg"
+              >
+                <BadgeText className="text-xs dark:text-light-text-200 text-dark-text-200">
+                  {taskGroups.length}
+                </BadgeText>
+              </Badge>
             </View>
           </View>
 
@@ -158,7 +171,6 @@ export default function Home() {
                         .length
                     }
                     progress={groupProgress(group)}
-                    handleRemoveTaskGroup={handleRemoveTaskGroup}
                   />
                 ))
             )}

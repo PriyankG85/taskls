@@ -74,7 +74,6 @@ const RootLayout = () => {
       <UserContext.Provider value={{ name, setName, theme, setTheme }}>
         <GluestackUIProvider mode={theme}>
           <StatusBar style="light" />
-
           <Slot screenOptions={{ headerShown: false }} />
         </GluestackUIProvider>
       </UserContext.Provider>

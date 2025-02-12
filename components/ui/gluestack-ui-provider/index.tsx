@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { config } from "./config";
 import {
   View,
@@ -6,9 +6,9 @@ import {
   useColorScheme as useSystemColorScheme,
 } from "react-native";
 import { OverlayProvider } from "@gluestack-ui/overlay";
-import { ToastProvider } from "@gluestack-ui/toast";
 import { useColorScheme as useColorSchemeNW } from "nativewind";
 import AlertDialogProvider from "../alert-dialog-provider";
+import { InputDialogProvider } from "../input-dialog";
 
 export function GluestackUIProvider({
   mode = "light",
@@ -24,8 +24,7 @@ export function GluestackUIProvider({
     mode === "system" ? systemColorScheme : mode
   );
 
-  // FIXME: Bug: theme auto changing when colorscheme is null.
-  useEffect(() => {
+  const updateColorScheme = useCallback(() => {
     if (mode === "system") {
       setColorScheme(systemColorScheme);
       colorSchemeNW.setColorScheme("system");
@@ -34,6 +33,10 @@ export function GluestackUIProvider({
       colorSchemeNW.setColorScheme(mode);
     }
   }, [mode, systemColorScheme]);
+
+  useEffect(() => {
+    updateColorScheme();
+  }, [mode, systemColorScheme, updateColorScheme]);
 
   return (
     <View
@@ -45,7 +48,7 @@ export function GluestackUIProvider({
     >
       <OverlayProvider>
         <AlertDialogProvider>
-          <ToastProvider>{props.children}</ToastProvider>
+          <InputDialogProvider>{props.children}</InputDialogProvider>
         </AlertDialogProvider>
       </OverlayProvider>
     </View>

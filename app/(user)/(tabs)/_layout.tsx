@@ -1,46 +1,100 @@
-import { router, Tabs } from "expo-router";
-import { View } from "react-native";
+import { Href, router, useSegments } from "expo-router";
+import { Icon } from "@/components/ui/icon";
+import { Animated, Pressable, View } from "react-native";
 import {
   Bolt,
   CalendarDays,
   CheckCheck,
   Home,
+  LucideIcon,
   Plus,
 } from "lucide-react-native";
 import { Fab, FabIcon } from "@/components/ui/fab";
-import { useColorScheme } from "nativewind";
 import {
   Menu,
   MenuItem,
   MenuItemLabel,
   MenuSeparator,
 } from "@/components/ui/menu";
-import { useState } from "react";
+import React, { useRef, useState } from "react";
 import NewTaskGroup from "@/components/global/newTaskGroup";
+import FloatingBottomTabs from "@/components/tabs/FloatingBottomTabs";
+import { Tabs as DefaultTabsUI } from "expo-router";
+import { ScrollView } from "react-native";
+
+type TabsProps = {
+  name: string;
+  href: Href;
+  icon: LucideIcon;
+}[];
+
+const tabs: TabsProps = [
+  {
+    name: "(tabs)",
+    href: "/(user)/(tabs)",
+    icon: Home,
+  },
+  {
+    name: "todaysTasks",
+    href: "/todaysTasks",
+    icon: CalendarDays,
+  },
+  {
+    name: "completed",
+    href: "/completed",
+    icon: CheckCheck,
+  },
+  {
+    name: "settings",
+    href: "/settings",
+    icon: Bolt,
+  },
+];
 
 const RootLayout = () => {
-  const dark = useColorScheme().colorScheme === "dark";
   const [showModal, setShowModal] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const segments = useSegments();
+
+  // Determine the active tab index.
+  const activeIndex = tabs.findIndex(
+    (tab) => tab.name === segments[segments.length - 1]
+  );
 
   return (
-    <View className="flex-1 dark:bg-dark-bg-100 bg-light-bg-100">
-      <Tabs
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true }
+      )}
+      scrollEventThrottle={16}
+      className="flex-1 dark:bg-dark-bg-100 bg-light-bg-100"
+    >
+      <DefaultTabsUI
+        tabBar={() => (
+          <FloatingBottomTabs scrollY={scrollY} bottomSpace={16}>
+            {tabs.map((tab, index) => (
+              <Pressable
+                key={tab.name}
+                onPress={() => {
+                  router.push(tab.href);
+                }}
+                className="flex items-center justify-center p-2.5"
+              >
+                <Icon
+                  as={tab.icon}
+                  color={activeIndex === index ? "#fff" : "#ffffff50"}
+                  size={"xl"}
+                />
+              </Pressable>
+            ))}
+          </FloatingBottomTabs>
+        )}
         screenOptions={{
           tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: dark ? "#e0e0e0" : "#000",
-          tabBarInactiveTintColor: dark ? "#e0e0e070" : "#33333370",
-          tabBarStyle: {
-            borderWidth: 1,
-            borderColor: dark ? "#29293e" : "#b4bfcc",
-            backgroundColor: dark ? "#29293e" : "#b4bfcc",
-            margin: 16,
-            display: "flex",
-            paddingTop: 10,
-            height: 60,
-            borderTopWidth: 0,
-            borderRadius: 28,
-            position: "relative",
-          },
+          tabBarActiveTintColor: "#e0e0e0",
+          tabBarInactiveTintColor: "#e0e0e070",
           headerShown: false,
           tabBarShowLabel: false,
           animation: "shift",
@@ -55,33 +109,18 @@ const RootLayout = () => {
               restSpeedThreshold: 0.01,
             },
           },
+          sceneStyle: {
+            backgroundColor: "transparent",
+          },
         }}
       >
-        <Tabs.Screen
-          name="index"
-          options={{
-            tabBarIcon: ({ color }) => <Home color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="todaysTasks"
-          options={{
-            tabBarIcon: ({ color }) => <CalendarDays color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="completed"
-          options={{
-            tabBarIcon: ({ color }) => <CheckCheck color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="settings"
-          options={{
-            tabBarIcon: ({ color }) => <Bolt color={color} />,
-          }}
-        />
-      </Tabs>
+        {tabs.map((tab) => (
+          <DefaultTabsUI.Screen
+            key={tab.name}
+            name={tab.name === "(tabs)" ? "index" : tab.name}
+          />
+        ))}
+      </DefaultTabsUI>
 
       <Menu
         placement="top"
@@ -122,7 +161,7 @@ const RootLayout = () => {
       </Menu>
 
       <NewTaskGroup visible={showModal} setVisible={setShowModal} />
-    </View>
+    </ScrollView>
   );
 };
 

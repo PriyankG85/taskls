@@ -55,7 +55,11 @@ const TaskCard = ({
             <Clock size={16} color={"#9ca3afb3"} />
 
             <Text className="text-[#9ca3af] font-Montserrat text-xs">
-              {dueDate.date}
+              {new Date(dueDate.date).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
               {" • "}
               {dueDate.time}
             </Text>

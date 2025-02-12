@@ -1,8 +1,7 @@
-import { View, TextInput, ToastAndroid } from "react-native";
+import { View, TextInput } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { FileQuestion } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
-import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import TodosContext from "@/context/userTodos";
 import { useColorScheme } from "nativewind";
 
@@ -20,6 +19,7 @@ import { Box } from "../ui/box";
 import { Input, InputField } from "../ui/input";
 import { Button, ButtonText } from "../ui/button";
 import Animated from "react-native-reanimated";
+import { handleAddTaskList } from "@/utils/handleTaskList";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
@@ -44,31 +44,14 @@ const NewTaskGroup = ({
   }, [visible]);
 
   const handleAddTaskGroup = async () => {
-    let nameExists = false;
-    taskGroups.forEach((group: any) => {
-      if (group.name === input.trim()) nameExists = true;
+    handleAddTaskList({
+      input,
+      logo,
+      taskGroups,
+      setTaskGroups,
+      onInvalidInput: () => setInvalid(true),
+      onNoInput: () => inputRef.current?.focus(),
     });
-
-    if (input === "") {
-      setInvalid(true);
-      inputRef.current?.focus();
-      return;
-    } else if (nameExists) {
-      setInvalid(true);
-      ToastAndroid.show("A List exists with this name.", 5);
-      return;
-    }
-
-    const groupData = {
-      name: input,
-      img: logo,
-    };
-
-    setDataToLocalStorage(
-      "taskGroups",
-      JSON.stringify([...taskGroups, groupData])
-    );
-    setTaskGroups([...taskGroups, groupData]);
     setVisible(false);
   };
 
@@ -154,6 +137,7 @@ const NewTaskGroup = ({
                       setInvalid(false);
                       setInput(e);
                     }}
+                    maxLength={20}
                     placeholder="Group Name"
                     placeholderTextColor={dark ? "#ffffff70" : "#00000070"}
                     className="px-4 py-3 placeholder:text-typography-500"

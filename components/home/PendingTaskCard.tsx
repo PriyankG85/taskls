@@ -8,8 +8,8 @@ import { Box } from "../ui/box";
 import { ImageBackground } from "expo-image";
 import { BlurView } from "expo-blur";
 import { TaskProps } from "@/types/taskProps";
-import { MotiPressable } from "moti/interactions";
 import { router } from "expo-router";
+import TaskControlsMenuWrapper from "../global/TaskControlsMenuWrapper";
 
 const PendingTaskCard = ({
   taskId,
@@ -18,26 +18,35 @@ const PendingTaskCard = ({
   taskTitle,
   taskDescription,
   logo,
-  dueDate,
+  dueDate: unformattedDueDate,
 }: TaskProps) => {
   const { todos, setTodos } = useContext(TodosContext);
   const dark = useColorScheme().colorScheme === "dark";
 
+  const dueDate = unformattedDueDate
+    ? {
+        date: unformattedDueDate.date,
+        time: unformattedDueDate.time,
+      }
+    : undefined;
+
   return (
-    <MotiPressable
+    <TaskControlsMenuWrapper
+      activeOpacity={1}
+      taskId={taskId}
       onPress={() =>
-        router.push(
-          `/taskPreview?taskGroup=${encodeURIComponent(
-            taskGroup
-          )}&taskTitle=${encodeURIComponent(
-            taskTitle
-          )}&taskId=${taskId}&notificationId=${notificationId}${
-            taskDescription &&
-            "&taskDescription=" + encodeURIComponent(taskDescription)
-          }${
-            dueDate && "&dueDate=" + encodeURIComponent(JSON.stringify(dueDate))
-          }${logo && "&logo=" + encodeURIComponent(logo)}`
-        )
+        router.push({
+          pathname: "/taskPreview",
+          params: {
+            taskGroup,
+            taskTitle,
+            taskId,
+            notificationId,
+            taskDescription,
+            dueDate: JSON.stringify(dueDate),
+            logo,
+          },
+        })
       }
     >
       <ImageBackground
@@ -95,7 +104,11 @@ const PendingTaskCard = ({
               <Text
                 className={`dark:text-[#9ca3af] text-light-text-200/70 font-Montserrat text-xs`}
               >
-                {dueDate.date}
+                {new Date(dueDate.date).toLocaleDateString("en-US", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
                 {" • "}
                 {dueDate.time}
               </Text>
@@ -103,7 +116,7 @@ const PendingTaskCard = ({
           )}
         </Box>
       </ImageBackground>
-    </MotiPressable>
+    </TaskControlsMenuWrapper>
   );
 };
 

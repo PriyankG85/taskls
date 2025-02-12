@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button, ButtonText } from "../button";
 
-interface AlertDialogContextType {
+export interface AlertDialogContextType {
   show: (
     title: string,
     action: (event: GestureResponderEvent) => void,

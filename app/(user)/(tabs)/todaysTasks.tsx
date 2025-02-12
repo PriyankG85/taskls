@@ -14,13 +14,15 @@ import { useColorScheme } from "nativewind";
 
 const TodaysTasks = () => {
   const dark = useColorScheme().colorScheme === "dark";
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    weekday: "short",
-  });
+  const today = new Date();
   const { todos }: { todos: TaskProps[] } = useContext(TodosContext);
-  const todaysTodos = todos.filter((todo) => todo.dueDate?.date === today);
+  const todaysTodos = todos.filter((todo) => {
+    const todayDate = today.toISOString().split("T")[0];
+    const taskDate = todo.dueDate?.date
+      ? todo.dueDate.date.split("T")[0]
+      : undefined;
+    return taskDate === todayDate;
+  });
   const [selected, setSelected] = useState("All");
   const [todosToDisplay, setTodosToDisplay] = useState(todaysTodos);
 
@@ -54,7 +56,11 @@ const TodaysTasks = () => {
         <Text
           className={`text-xl dark:text-blue-500 text-blue-600 font-spaceMonoBold`}
         >
-          {today}
+          {today.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            weekday: "short",
+          })}
         </Text>
       </View>
 
@@ -103,21 +109,18 @@ const TodaysTasks = () => {
               key={i}
               activeOpacity={0.75}
               onPress={() =>
-                router.push(
-                  `/taskPreview?taskGroup=${encodeURIComponent(
-                    todo.taskGroup
-                  )}&taskTitle=${encodeURIComponent(todo.taskTitle)}&taskId=${
-                    todo.taskId
-                  }&notificationId=${todo.notificationId}${
-                    todo.taskDescription &&
-                    "&taskDescription=" +
-                      encodeURIComponent(todo.taskDescription as string)
-                  }${
-                    todo.dueDate &&
-                    "&dueDate=" +
-                      encodeURIComponent(JSON.stringify(todo.dueDate))
-                  }${todo.logo && "&logo=" + encodeURIComponent(todo.logo)}`
-                )
+                router.push({
+                  pathname: "/taskPreview",
+                  params: {
+                    taskGroup: todo.taskGroup,
+                    taskTitle: todo.taskTitle,
+                    taskId: todo.taskId,
+                    notificationId: todo.notificationId,
+                    taskDescription: todo.taskDescription,
+                    dueDate: JSON.stringify(todo.dueDate),
+                    logo: todo.logo,
+                  },
+                })
               }
             >
               <TodaysTaskCard

@@ -10,6 +10,7 @@ import { FileQuestion } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 import { Image } from "expo-image";
 import { TaskGroup } from "@/types/taskGroupProps";
+import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
 
 const TasksInGroup = () => {
   const dark = useColorScheme().colorScheme === "dark";
@@ -37,8 +38,11 @@ const TasksInGroup = () => {
           )}
         </Box>
         <View className="gap-1">
-          <Text className="font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100">
-            {groupName} Tasks
+          <Text
+            numberOfLines={1}
+            className="font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100"
+          >
+            {groupName}
           </Text>
           <Text className="font-Montserrat text-base dark:text-dark-accent-200 text-light-accent-200 ml-1">
             {groupTodos.length} tasks
@@ -48,24 +52,23 @@ const TasksInGroup = () => {
 
       <VStack space="md">
         {groupTodos.map((todo) => (
-          <TouchableOpacity
+          <TaskControlsMenuWrapper
             key={todo.taskId}
+            taskId={todo.taskId}
             activeOpacity={0.75}
             onPress={() =>
-              router.push(
-                `/taskPreview?taskGroup=${encodeURIComponent(
-                  todo.taskGroup
-                )}&taskTitle=${encodeURIComponent(todo.taskTitle)}&taskId=${
-                  todo.taskId
-                }&notificationId=${todo.notificationId}${
-                  todo.taskDescription &&
-                  "&taskDescription=" +
-                    encodeURIComponent(todo.taskDescription as string)
-                }${
-                  todo.dueDate &&
-                  "&dueDate=" + encodeURIComponent(JSON.stringify(todo.dueDate))
-                }${todo.logo && "&logo=" + encodeURIComponent(todo.logo)}`
-              )
+              router.push({
+                pathname: "/taskPreview",
+                params: {
+                  taskGroup: todo.taskGroup,
+                  taskTitle: todo.taskTitle,
+                  taskId: todo.taskId,
+                  notificationId: todo.notificationId,
+                  taskDescription: todo.taskDescription,
+                  dueDate: JSON.stringify(todo.dueDate),
+                  logo: todo.logo,
+                },
+              })
             }
           >
             <TaskCard
@@ -77,7 +80,7 @@ const TasksInGroup = () => {
               taskGroup={todo.taskGroup}
               completed={todo.completed}
             />
-          </TouchableOpacity>
+          </TaskControlsMenuWrapper>
         ))}
       </VStack>
     </ScrollView>
