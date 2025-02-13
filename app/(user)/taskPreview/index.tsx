@@ -5,13 +5,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Trash2 } from "lucide-react-native";
 import { decodeImgUri } from "@/utils/decodeImgUri";
 import TodosContext from "@/context/userTodos";
-import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
-import cancelNotification from "@/utils/cancelNotifications";
-import { TaskProps } from "@/types/taskProps";
 import { useColorScheme } from "nativewind";
 import { useAlertDialog } from "@/hooks/useAlertDialog";
 import { handleDeleteTask } from "@/utils/handleTask";
-import parseDateString from "@/utils/parseDateString";
 
 const TaskPreview = () => {
   const dark = useColorScheme().colorScheme === "dark";

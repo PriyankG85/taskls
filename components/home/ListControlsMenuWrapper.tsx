@@ -5,10 +5,9 @@ import { useAlertDialog } from "@/hooks/useAlertDialog";
 import { TouchableOpacity, TouchableOpacityProps } from "react-native";
 import TodosContext from "@/context/userTodos";
 import { TaskGroup } from "@/types/taskGroupProps";
-import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { useInputDialog } from "../ui/input-dialog";
 import { TaskProps } from "@/types/taskProps";
-import { handleDeleteTaskList } from "@/utils/handleTaskList";
+import { handleDeleteTaskList, handleRenameList } from "@/utils/handleTaskList";
 
 interface Props extends TouchableOpacityProps {
   listTitle: string;
@@ -36,30 +35,15 @@ const ListControlsMenuWrapper: React.FC<Props> = ({
     handleDeleteTaskList(taskGroups, setTaskGroups, name, todos, setTodos);
   };
 
-  const handleRenameList = async () => {
-    const input = await prompt("Enter a new name for the list");
-    if (input.length !== 0) {
-      const modifiedGroups = taskGroups.map((group: TaskGroup) =>
-        group.name === listTitle
-          ? {
-              ...group,
-              name: input.length === 0 ? group.name : input,
-            }
-          : group
-      );
-      const modifiedTasks = todos.map((task: TaskProps) =>
-        task.taskGroup === listTitle
-          ? {
-              ...task,
-              taskGroup: input.length === 0 ? task.taskGroup : input,
-            }
-          : task
-      );
-      setTodos(modifiedTasks);
-      setDataToLocalStorage("todos", JSON.stringify(modifiedTasks));
-      setTaskGroups(modifiedGroups);
-      setDataToLocalStorage("taskGroups", JSON.stringify(modifiedGroups));
-    }
+  const handleRename = async () => {
+    await handleRenameList({
+      listTitle,
+      taskGroups,
+      setTaskGroups,
+      todos,
+      setTodos,
+      prompt,
+    });
   };
 
   return (
@@ -83,7 +67,7 @@ const ListControlsMenuWrapper: React.FC<Props> = ({
       )}
     >
       <MenuItem
-        onPress={handleRenameList}
+        onPress={handleRename}
         className="gap-2 active:bg-secondary-700"
         textValue="Rename List"
       >

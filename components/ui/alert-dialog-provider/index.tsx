@@ -67,7 +67,7 @@ const AlertDialogProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
       <AlertDialog isOpen={dialogState.isOpen} onClose={handleClose} size="md">
         <AlertDialogBackdrop />
-        <AlertDialogContent className="gap-5">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <Text className="text-typography-950 font-semibold text-lg">
               {dialogState.title}
@@ -80,7 +80,7 @@ const AlertDialogProvider = ({ children }: { children: React.ReactNode }) => {
               </Text>
             </AlertDialogBody>
           )}
-          <AlertDialogFooter>
+          <AlertDialogFooter className="mt-5">
             <Button
               variant="outline"
               action="secondary"

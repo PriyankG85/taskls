@@ -63,3 +63,43 @@ export const handleDeleteTaskList = async (
   setTaskGroups(newGroups);
   setDataToLocalStorage("taskGroups", JSON.stringify(newGroups));
 };
+
+export const handleRenameList = async ({
+  listTitle,
+  taskGroups,
+  todos,
+  setTaskGroups,
+  setTodos,
+  prompt,
+}: {
+  listTitle: string;
+  taskGroups: TaskGroup[];
+  todos: TaskProps[];
+  setTaskGroups: (groups: TaskGroup[]) => void;
+  setTodos: (todos: TaskProps[]) => void;
+  prompt: (message: string) => Promise<string>;
+}) => {
+  const input = await prompt("Enter a new name for the list");
+  if (input.length !== 0) {
+    const modifiedGroups = taskGroups.map((group: TaskGroup) =>
+      group.name === listTitle
+        ? {
+            ...group,
+            name: input.length === 0 ? group.name : input,
+          }
+        : group
+    );
+    const modifiedTasks = todos.map((task: TaskProps) =>
+      task.taskGroup === listTitle
+        ? {
+            ...task,
+            taskGroup: input.length === 0 ? task.taskGroup : input,
+          }
+        : task
+    );
+    setTodos(modifiedTasks);
+    setDataToLocalStorage("todos", JSON.stringify(modifiedTasks));
+    setTaskGroups(modifiedGroups);
+    setDataToLocalStorage("taskGroups", JSON.stringify(modifiedGroups));
+  }
+};
