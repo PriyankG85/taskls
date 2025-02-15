@@ -52,7 +52,7 @@ const TaskPreview = () => {
     >
       <View className="flex-row justify-between items-center">
         <Text
-          className={`font-Montserrat text-3xl ${
+          className={`font-Metamorphous text-3xl ${
             dark ? "text-dark-text-100" : "text-light-text-100"
           }`}
         >

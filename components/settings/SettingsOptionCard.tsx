@@ -40,7 +40,7 @@ const SettingsOptionCard = ({
           </Text>
           {subtitle && (
             <Text
-              className={`text-sm capitalize font-spaceMono ${
+              className={`text-sm capitalize font-Quattrocento ${
                 dark ? "text-dark-text-200/80" : "text-light-text-200/80"
               }`}
             >

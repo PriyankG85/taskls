@@ -23,10 +23,10 @@ const PendingTasks = () => {
     <ScrollView className="flex-1 p-5 pt-10 dark:bg-dark-bg-100 bg-light-bg-100">
       <View className="flex-row gap-5 items-center mb-5">
         <View className="gap-1">
-          <Text className="font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100">
+          <Text className="font-Metamorphous text-3xl dark:text-dark-text-100 text-light-text-100">
             Pending Tasks
           </Text>
-          <Text className="font-Montserrat text-base dark:text-dark-accent-200 text-light-accent-200 ml-1">
+          <Text className="font-Metamorphous text-base dark:text-dark-accent-200 text-light-accent-200 ml-1">
             {pendingTodos.length} tasks pending
           </Text>
         </View>

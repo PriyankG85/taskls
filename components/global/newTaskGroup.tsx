@@ -94,7 +94,7 @@ const NewTaskGroup = ({
                 <ActionsheetDragIndicator className="dark:bg-secondary-600 bg-secondary-900" />
               </ActionsheetDragIndicatorWrapper>
 
-              <ActionsheetItemText className="text-typography-950 text-xl font-Montserrat mb-5">
+              <ActionsheetItemText className="text-typography-950 text-xl font-Metamorphous mb-5">
                 Add List
               </ActionsheetItemText>
 

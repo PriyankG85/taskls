@@ -8,7 +8,7 @@ const Header = ({ name }: { name: string }) => {
   return (
     <View className="flex-row py-5 px-7 justify-between items-center dark:bg-dark-bg-300 bg-light-bg-300">
       <View>
-        <Text className="text-base font-Montserrat leading-5 dark:text-dark-text-100 text-light-text-100">
+        <Text className="text-sm font-spaceMonoBold leading-5 dark:text-dark-text-100 text-light-text-100">
           Hello!{"\n"}
           {name}
         </Text>

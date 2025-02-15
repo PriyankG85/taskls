@@ -5,12 +5,13 @@ import {
   Pressable,
   TouchableOpacity,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { Suspense, useContext, useEffect, useState } from "react";
 import TodaysTaskCard from "@/components/tabs/TaskCard";
 import TodosContext from "@/context/userTodos";
 import { router } from "expo-router";
 import { TaskProps } from "@/types/taskProps";
 import { useColorScheme } from "nativewind";
+import LoadingIndicator from "@/components/global/LoadingIndicator";
 
 const TodaysTasks = () => {
   const dark = useColorScheme().colorScheme === "dark";
@@ -43,102 +44,104 @@ const TodaysTasks = () => {
   }, [todos, selected]);
 
   return (
-    <ScrollView
-      className="flex-1 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
-      contentContainerStyle={{ gap: 25 }}
-    >
-      <View className="gap-1 px-5">
-        <Text
-          className={`font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100`}
-        >
-          Today's Tasks
-        </Text>
-        <Text
-          className={`text-xl dark:text-blue-500 text-blue-600 font-spaceMonoBold`}
-        >
-          {today.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            weekday: "short",
-          })}
-        </Text>
-      </View>
-
+    <Suspense fallback={<LoadingIndicator />}>
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingLeft: 20 }}
+        className="flex-1 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
+        contentContainerStyle={{ gap: 25 }}
       >
-        {["All", "In Progress", "Completed"].map((item) => (
-          <Pressable
-            key={item}
-            className="rounded-lg bg-background-0 px-7 py-2"
-            onPress={() => setSelected(item)}
+        <View className="gap-1 px-5">
+          <Text
+            className={`font-Metamorphous text-3xl dark:text-dark-text-100 text-light-text-100`}
           >
+            Today's Tasks
+          </Text>
+          <Text
+            className={`text-xl dark:text-blue-500 text-blue-600 font-spaceMonoBold`}
+          >
+            {today.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              weekday: "short",
+            })}
+          </Text>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 10, paddingLeft: 20 }}
+        >
+          {["All", "In Progress", "Completed"].map((item) => (
+            <Pressable
+              key={item}
+              className="rounded-lg bg-background-0 px-7 py-2"
+              onPress={() => setSelected(item)}
+            >
+              <Text
+                className={`text-base font-roboto text-typography-400 ${
+                  selected === item && "text-typography-900 font-extrabold"
+                }`}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View className="gap-[10px] px-5">
+          {todaysTodos.length === 0 ? (
             <Text
-              className={`text-base font-roboto text-typography-400 ${
-                selected === item && "text-typography-900 font-extrabold"
+              className={`text-lg text-center ${
+                dark ? "text-dark-text-200/60" : "text-light-text-200/60"
               }`}
             >
-              {item}
+              No Tasks for Today!
             </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      <View className="gap-[10px] px-5">
-        {todaysTodos.length === 0 ? (
-          <Text
-            className={`text-lg text-center ${
-              dark ? "text-dark-text-200/60" : "text-light-text-200/60"
-            }`}
-          >
-            No Tasks for Today!
-          </Text>
-        ) : todosToDisplay.length === 0 ? (
-          <Text
-            className={`text-lg text-center ${
-              dark ? "text-dark-text-200/60" : "text-light-text-200/60"
-            }`}
-          >
-            No Tasks
-          </Text>
-        ) : (
-          todosToDisplay.map((todo, i) => (
-            <TouchableOpacity
-              key={i}
-              activeOpacity={0.75}
-              onPress={() =>
-                router.push({
-                  pathname: "/taskPreview",
-                  params: {
-                    taskGroup: todo.taskGroup,
-                    taskTitle: todo.taskTitle,
-                    taskId: todo.taskId,
-                    notificationId: todo.notificationId,
-                    taskDescription: todo.taskDescription,
-                    dueDate: JSON.stringify(todo.dueDate),
-                    logo: todo.logo,
-                  },
-                })
-              }
+          ) : todosToDisplay.length === 0 ? (
+            <Text
+              className={`text-lg text-center ${
+                dark ? "text-dark-text-200/60" : "text-light-text-200/60"
+              }`}
             >
-              <TodaysTaskCard
-                taskId={todo.taskId}
-                notificationId={todo.notificationId}
-                taskTitle={todo.taskTitle}
-                dueDate={todo.dueDate}
-                logo={todo.logo}
-                taskGroup={todo.taskGroup}
-                completed={todo.completed}
-              />
-            </TouchableOpacity>
-          ))
-        )}
-      </View>
+              No Tasks
+            </Text>
+          ) : (
+            todosToDisplay.map((todo, i) => (
+              <TouchableOpacity
+                key={i}
+                activeOpacity={0.75}
+                onPress={() =>
+                  router.push({
+                    pathname: "/taskPreview",
+                    params: {
+                      taskGroup: todo.taskGroup,
+                      taskTitle: todo.taskTitle,
+                      taskId: todo.taskId,
+                      notificationId: todo.notificationId,
+                      taskDescription: todo.taskDescription,
+                      dueDate: JSON.stringify(todo.dueDate),
+                      logo: todo.logo,
+                    },
+                  })
+                }
+              >
+                <TodaysTaskCard
+                  taskId={todo.taskId}
+                  notificationId={todo.notificationId}
+                  taskTitle={todo.taskTitle}
+                  dueDate={todo.dueDate}
+                  logo={todo.logo}
+                  taskGroup={todo.taskGroup}
+                  completed={todo.completed}
+                />
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
 
-      <View className="bottom_tabs_safe_area h-[35px]" />
-    </ScrollView>
+        <View className="bottom_tabs_safe_area h-[35px]" />
+      </ScrollView>
+    </Suspense>
   );
 };
 

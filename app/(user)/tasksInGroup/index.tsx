@@ -70,7 +70,7 @@ const TasksInGroup = () => {
             <View className="flex-row items-center gap-2">
               <Text
                 numberOfLines={1}
-                className="font-Montserrat text-3xl dark:text-dark-text-100 text-light-text-100"
+                className="font-Metamorphous text-3xl dark:text-dark-text-100 text-light-text-100"
               >
                 {groupName}
               </Text>
@@ -78,7 +78,7 @@ const TasksInGroup = () => {
                 <Edit size={18} color={dark ? "#ffffff" : "#000000"} />
               </Pressable>
             </View>
-            <Text className="font-Montserrat text-base dark:text-dark-accent-200 text-light-accent-200 ml-1">
+            <Text className="font-Metamorphous text-base dark:text-dark-accent-200 text-light-accent-200 ml-1">
               {groupTodos.length} tasks
             </Text>
           </View>

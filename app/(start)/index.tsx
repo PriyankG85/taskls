@@ -61,7 +61,7 @@ const Start = () => {
       gradientColors={["#002855", "#4c669f"]}
       blurIntensity={70}
     >
-      <Box className="flex-1 items-center pt-[13vh] gap-14 font-spaceMono">
+      <Box className="flex-1 items-center pt-[13vh] gap-14 font-Quattrocento">
         <MotiView
           from={{
             scale: 0.75,
@@ -117,7 +117,7 @@ const Start = () => {
             </Input>
           </MotiView>
           {warning && (
-            <Text className="text-error-50 ml-2 text-sm font-Montserrat">
+            <Text className="text-error-50 ml-2 text-sm font-Metamorphous">
               Please enter your name first
             </Text>
           )}
@@ -128,7 +128,9 @@ const Start = () => {
           onPress={handleSetup}
           className="bg-dark-bg-300 text-base rounded-2xl overflow-hidden shadow shadow-black px-10 py-4"
         >
-          <Text className="font-spaceMono text-base text-white">Continue</Text>
+          <Text className="font-Quattrocento text-base text-white">
+            Continue
+          </Text>
         </Pressable>
       </Box>
     </GlassmorphicBackground>

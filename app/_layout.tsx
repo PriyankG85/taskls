@@ -1,7 +1,7 @@
 import { useFonts } from "expo-font";
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { getDataFromLocalStorage } from "@/hooks/useHandleLocalStorage";
 import * as Notifications from "expo-notifications";
 import UserContext from "@/context/userdetails";
@@ -9,21 +9,17 @@ import { StatusBar } from "expo-status-bar";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/styles/global.css";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import LoadingIndicator from "@/components/global/LoadingIndicator";
 
 SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({
-  duration: 1000,
-  fade: true,
-});
 
 const RootLayout = () => {
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     SpaceMonoBold: require("../assets/fonts/SpaceMono-Bold.ttf"),
-    MontserratAlternates: require("../assets/fonts/MontserratAlternates-Regular.ttf"),
     Metamorphous: require("../assets/fonts/Metamorphous.ttf"),
     Quattrocento: require("../assets/fonts/Quattrocento-Sans.ttf"),
   });
+
   const [name, setName] = useState<string | null>(null);
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
 
@@ -70,14 +66,16 @@ const RootLayout = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <UserContext.Provider value={{ name, setName, theme, setTheme }}>
-        <GluestackUIProvider mode={theme}>
-          <StatusBar style="light" />
-          <Slot screenOptions={{ headerShown: false }} />
-        </GluestackUIProvider>
-      </UserContext.Provider>
-    </GestureHandlerRootView>
+    <Suspense fallback={<LoadingIndicator />}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <UserContext.Provider value={{ name, setName, theme, setTheme }}>
+          <GluestackUIProvider mode={theme}>
+            <StatusBar style="light" />
+            <Slot screenOptions={{ headerShown: false }} />
+          </GluestackUIProvider>
+        </UserContext.Provider>
+      </GestureHandlerRootView>
+    </Suspense>
   );
 };
 

@@ -194,9 +194,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        spaceMono: ["SpaceMono", "monospace"],
         spaceMonoBold: ["SpaceMonoBold", "monospace"],
-        Montserrat: ["MontserratAlternates", "sans-serif"],
         Metamorphous: ["Metamorphous", "sans-serif"],
         Quattrocento: ["Quattrocento", "sans-serif"],
         roboto: ["Roboto", "sans-serif"],
