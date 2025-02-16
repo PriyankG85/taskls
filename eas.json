@@ -21,13 +21,13 @@
         "buildType": "apk"
       },
       "channel": "preview",
-      "resourceClass": "large"
+      "resourceClass": "medium"
     },
     "production": {
       "environment": "production",
       "autoIncrement": true,
       "channel": "production",
-      "resourceClass": "large"
+      "resourceClass": "medium"
     }
   },
   "submit": {

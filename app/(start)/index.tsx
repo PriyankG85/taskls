@@ -9,7 +9,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { MotiView, useDynamicAnimation } from "moti";
 import { cssInterop } from "nativewind";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 cssInterop(Image, { className: "style" });
@@ -75,10 +75,10 @@ const Start = () => {
           className="w-full h-[40%] items-center justify-center"
         >
           <Image
-            source={require("@/assets/images/tasks-illustration.png")}
+            source={require("@/assets/images/tasks-illustration.webp")}
+            alt="tasks-illustration"
             contentFit="contain"
             className="size-full"
-            priority="high"
           />
         </MotiView>
 
