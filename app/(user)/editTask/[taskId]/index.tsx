@@ -213,7 +213,7 @@ const EditTask = () => {
 
       <TouchableOpacity
         activeOpacity={0.75}
-        className="py-4 my-14 rounded-xl bg-dark-accent-100 disabled:opacity-70"
+        className="py-4 mb-20 rounded-xl bg-dark-accent-100 disabled:opacity-70"
         onPress={handleSaveTask}
         disabled={!checkTaskModified()}
       >

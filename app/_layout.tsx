@@ -67,14 +67,12 @@ const RootLayout = () => {
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <UserContext.Provider value={{ name, setName, theme, setTheme }}>
-          <GluestackUIProvider mode={theme}>
-            <StatusBar style="light" />
-            <Slot screenOptions={{ headerShown: false }} />
-          </GluestackUIProvider>
-        </UserContext.Provider>
-      </GestureHandlerRootView>
+      <UserContext.Provider value={{ name, setName, theme, setTheme }}>
+        <GluestackUIProvider mode={theme}>
+          <StatusBar style="light" />
+          <Slot screenOptions={{ headerShown: false }} />
+        </GluestackUIProvider>
+      </UserContext.Provider>
     </Suspense>
   );
 };

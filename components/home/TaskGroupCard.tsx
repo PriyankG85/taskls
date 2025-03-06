@@ -2,12 +2,11 @@ import { View, Text } from "react-native";
 import React, { memo, Suspense } from "react";
 import CircularProgress from "../global/CircularProgress";
 import { Image } from "expo-image";
-import { FileQuestion } from "lucide-react-native";
 import { router } from "expo-router";
 import { Box } from "../ui/box";
-import { useColorScheme } from "nativewind";
 import ListControlsMenuWrapper from "./ListControlsMenuWrapper";
 import LoadingIndicator from "../global/LoadingIndicator";
+import TextAvatar from "../global/TextAvatar";
 
 type Props = {
   title: string;
@@ -17,12 +16,11 @@ type Props = {
 };
 
 const TaskGroupCard = memo(({ title, tasks, progress, img }: Props) => {
-  const colorScheme = useColorScheme().colorScheme;
-
   return (
     <Suspense fallback={<LoadingIndicator />}>
       <ListControlsMenuWrapper
         listTitle={title}
+        logo={img}
         onPress={() =>
           router.push(`/tasksInGroup?groupName=${encodeURIComponent(title)}`)
         }
@@ -30,16 +28,13 @@ const TaskGroupCard = memo(({ title, tasks, progress, img }: Props) => {
         <Box className="flex-row justify-between w-full">
           <View className="flex-row items-center gap-4">
             <Box className="rounded-3xl w-16 h-16 p-2 bg-dark-accent-100 justify-center items-center">
-              {img ? (
+              {img && img !== "" ? (
                 <Image
                   source={{ uri: img }}
                   className="w-full h-full rounded-xl"
                 />
               ) : (
-                <FileQuestion
-                  size={28}
-                  color={colorScheme === "dark" ? "#ffffff" : "#000000"}
-                />
+                <TextAvatar text={title} />
               )}
             </Box>
 

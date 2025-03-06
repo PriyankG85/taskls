@@ -2,12 +2,14 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useContext } from "react";
 import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
 import { router, useLocalSearchParams } from "expo-router";
-import { Trash2 } from "lucide-react-native";
+import { CheckCircle, Trash2 } from "lucide-react-native";
 import { decodeImgUri } from "@/utils/decodeImgUri";
 import TodosContext from "@/context/userTodos";
 import { useColorScheme } from "nativewind";
 import { useAlertDialog } from "@/hooks/useAlertDialog";
 import { handleDeleteTask } from "@/utils/handleTask";
+import toggleTaskCompleted from "@/hooks/useMarkTaskCompleted";
+import { TaskProps } from "@/types/taskProps";
 
 const TaskPreview = () => {
   const dark = useColorScheme().colorScheme === "dark";
@@ -33,9 +35,7 @@ const TaskPreview = () => {
   const notificationId = params.notificationId as string;
   const taskGroup = decodeURIComponent(params.taskGroup as string);
   const taskTitle = decodeURIComponent(params.taskTitle as string);
-  const taskDescription = params.taskDescription
-    ? decodeURIComponent(params.taskDescription as string)
-    : undefined;
+  const taskDescription = decodeURIComponent(params.taskDescription as string);
   const decodedLogo = params.logo
     ? decodeImgUri(params.logo as string)
     : undefined;
@@ -44,6 +44,9 @@ const TaskPreview = () => {
     await handleDeleteTask(todos, setTodos, taskId, notificationId);
     router.back();
   };
+  const completed = todos.find(
+    (todo: TaskProps) => todo.taskId === taskId
+  )?.completed;
 
   return (
     <ScrollView
@@ -58,14 +61,30 @@ const TaskPreview = () => {
         >
           Task Preview
         </Text>
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() =>
-            alertDialog.show("Delete Task?", handleRemoveTask, "", "Yes")
-          }
-        >
-          <Trash2 size={24} color="#FF573380" className="mr-3" />
-        </TouchableOpacity>
+        <View className="flex-row items-center">
+          <TouchableOpacity
+            className="p-1 rounded-full"
+            onPress={() =>
+              setTodos(
+                toggleTaskCompleted(todos, taskId, notificationId, completed)
+              )
+            }
+          >
+            <CheckCircle
+              size={22}
+              color={completed ? "#4CAF60" : "#9ca3afb3"}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() =>
+              alertDialog.show("Delete Task?", handleRemoveTask, "", "Yes")
+            }
+            className="p-1"
+          >
+            <Trash2 size={22} color="#FF5733" className="mr-3" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TaskDetailsPreview

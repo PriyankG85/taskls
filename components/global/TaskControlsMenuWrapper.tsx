@@ -8,6 +8,7 @@ import { TaskProps } from "@/types/taskProps";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { router } from "expo-router";
 import { handleDeleteTask } from "@/utils/handleTask";
+import { useColorScheme } from "nativewind";
 
 interface Props extends TouchableOpacityProps {
   children: React.ReactElement;
@@ -20,6 +21,8 @@ const TaskControlsMenuWrapper: React.FC<Props> = ({
   ...props
 }) => {
   const alertDialog = useAlertDialog();
+  const dark = useColorScheme().colorScheme === "dark";
+
   const [showMenu, setShowMenu] = React.useState(false);
 
   const { todos, setTodos } = useContext<{
@@ -61,6 +64,10 @@ const TaskControlsMenuWrapper: React.FC<Props> = ({
       )}
     >
       <MenuItem
+        android_ripple={{
+          color: dark ? "#6E6E6E50" : "#BDBDBD50",
+          radius: 120,
+        }}
         onPress={handleEditTask}
         className="gap-2 active:bg-secondary-700"
         textValue="Edit Task"
@@ -72,6 +79,10 @@ const TaskControlsMenuWrapper: React.FC<Props> = ({
       <MenuSeparator />
 
       <MenuItem
+        android_ripple={{
+          color: dark ? "#6E6E6E50" : "#BDBDBD50",
+          radius: 120,
+        }}
         onPress={() =>
           alertDialog.show(`Sure want to delete the task?`, () =>
             handleRemoveTask(taskId)

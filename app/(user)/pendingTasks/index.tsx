@@ -1,15 +1,10 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import React, { useContext } from "react";
 import TodosContext from "@/context/userTodos";
 import { TaskProps } from "@/types/taskProps";
 import TaskCard from "@/components/taskInGroup/TaskCard";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { VStack } from "@/components/ui/vstack";
-import { Box } from "@/components/ui/box";
-import { FileQuestion } from "lucide-react-native";
-import { useColorScheme } from "nativewind";
-import { Image } from "expo-image";
-import { TaskGroup } from "@/types/taskGroupProps";
 import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
 
 const PendingTasks = () => {
@@ -32,7 +27,7 @@ const PendingTasks = () => {
         </View>
       </View>
 
-      <VStack space="md">
+      <VStack space="md" reversed>
         {pendingTodos.map((todo) => (
           <TaskControlsMenuWrapper
             key={todo.taskId}

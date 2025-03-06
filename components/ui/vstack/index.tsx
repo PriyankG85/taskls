@@ -1,8 +1,8 @@
-import React from 'react';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { View } from 'react-native';
+import React from "react";
+import type { VariantProps } from "@gluestack-ui/nativewind-utils";
+import { View } from "react-native";
 
-import { vstackStyle } from './styles';
+import { vstackStyle } from "./styles";
 
 type IVStackProps = React.ComponentProps<typeof View> &
   VariantProps<typeof vstackStyle>;
@@ -14,11 +14,12 @@ const VStack = React.forwardRef<React.ElementRef<typeof View>, IVStackProps>(
         className={vstackStyle({ space, reversed, class: className })}
         {...props}
         ref={ref}
+        style={{ paddingBottom: 64 }}
       />
     );
   }
 );
 
-VStack.displayName = 'VStack';
+VStack.displayName = "VStack";
 
 export { VStack };

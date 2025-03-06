@@ -16,6 +16,9 @@ import * as Notifications from "expo-notifications";
 import UserContext from "@/context/userdetails";
 import { useColorScheme } from "nativewind";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
+import { ScrollView } from "react-native";
+import { Animated } from "react-native";
+import ScrollYContext from "@/context/scrollY";
 
 const Settings = () => {
   const colorScheme = useColorScheme();
@@ -24,6 +27,8 @@ const Settings = () => {
   const [isNameEditable, setIsNameEditable] = useState(false);
 
   const { name, setName, setTheme } = useContext(UserContext);
+  const scrollY: Animated.Value = useContext(ScrollYContext);
+
   const [input, setInput] = useState(name);
 
   useEffect(() => {
@@ -39,7 +44,18 @@ const Settings = () => {
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <View className="flex-1 p-5 pt-10 dark:bg-dark-bg-100 bg-light-bg-100">
+      <ScrollView
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: { contentOffset: { y: scrollY } },
+            },
+          ],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        className="flex-1 p-5 pt-10 pb-16 dark:bg-dark-bg-100 bg-light-bg-100"
+      >
         <Text className="font-Metamorphous text-3xl dark:text-dark-text-100 text-light-text-100">
           Settings
         </Text>
@@ -156,7 +172,7 @@ const Settings = () => {
             </SettingsOptionCard>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </Suspense>
   );
 };

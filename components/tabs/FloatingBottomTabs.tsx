@@ -1,6 +1,6 @@
 import React from "react";
 import { useRef, useEffect } from "react";
-import { ViewProps } from "react-native";
+import { View, ViewProps } from "react-native";
 import { Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,19 +23,36 @@ const FloatingBottomTabs = React.forwardRef<
     const insets = useSafeAreaInsets();
     const translateY = useRef(new Animated.Value(0)).current;
 
+    // Add state to track last scroll position for direction detection
+    const lastScrollY = useRef(0);
+
     useEffect(() => {
       const listenerId = scrollY.addListener(({ value }) => {
+        // Check if scrolling up or down by comparing with last position
+        const isScrollingDown = value > lastScrollY.current;
+        lastScrollY.current = value;
+
         if (value < 0) {
-          // Pulled down
+          // Pulled down (overscroll), always show tabs
           Animated.spring(translateY, {
             toValue: 0,
             useNativeDriver: true,
           }).start();
-        } else if (value > 10) {
-          // Scrolled up
+        } else if (isScrollingDown && value > 10) {
+          // Scrolling DOWN, hide the tabs
           Animated.spring(translateY, {
             toValue: BOTTOM_TAB_HEIGHT + insets.bottom + bottomSpace,
             useNativeDriver: true,
+            speed: 44,
+            bounciness: 0,
+          }).start();
+        } else if (!isScrollingDown) {
+          // Scrolling UP, show the tabs
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            speed: 44,
+            bounciness: 0,
           }).start();
         }
       });
@@ -43,7 +60,7 @@ const FloatingBottomTabs = React.forwardRef<
       return () => {
         scrollY.removeListener(listenerId);
       };
-    }, [scrollY, translateY, insets.bottom]);
+    }, [scrollY, translateY, insets.bottom, bottomSpace]);
 
     return (
       <Animated.View
@@ -57,10 +74,12 @@ const FloatingBottomTabs = React.forwardRef<
             transform: [{ translateY }],
           },
         ]}
-        className="absolute left-5 right-5 flex-row items-center justify-around rounded-3xl border border-outline-100 bg-background-dark dark:bg-background-muted px-4 py-2 dark:shadow-white shadow-black shadow-lg elevation-md"
+        className="absolute w-fit self-center justify-center z-50 dark:shadow-white shadow-black shadow-lg elevation-md rounded-3xl"
         {...props}
       >
-        {children}
+        <View className="flex-row items-center justify-around rounded-3xl border border-outline-100 bg-background-muted dark:bg-background-muted px-4 py-2 gap-7">
+          {children}
+        </View>
       </Animated.View>
     );
   }

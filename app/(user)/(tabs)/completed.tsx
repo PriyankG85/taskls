@@ -7,6 +7,8 @@ import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { TaskProps } from "@/types/taskProps";
 import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
+import { Animated } from "react-native";
+import ScrollYContext from "@/context/scrollY";
 
 const Completed = () => {
   const router = useRouter();
@@ -15,6 +17,8 @@ const Completed = () => {
     setTodos,
   }: { todos: TaskProps[]; setTodos(list: TaskProps[]): void } =
     useContext(TodosContext);
+  const scrollY: Animated.Value = useContext(ScrollYContext);
+
   const completedTodos = todos.filter((todo) => todo.completed === true);
 
   const handleClear = () => {
@@ -25,7 +29,18 @@ const Completed = () => {
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <ScrollView className="flex-1 p-5 pt-10 dark:bg-dark-bg-100 bg-light-bg-100">
+      <ScrollView
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: { contentOffset: { y: scrollY } },
+            },
+          ],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        className="flex-1 p-5 pt-10 pb-16"
+      >
         <View className="flex-row items-center justify-between">
           <Text className={`font-Metamorphous text-3xl text-typography-950`}>
             Completed Tasks
@@ -72,6 +87,7 @@ const Completed = () => {
                   taskId={todo.taskId}
                   notificationId={todo.notificationId}
                   taskTitle={todo.taskTitle}
+                  taskDescription={todo.taskDescription}
                   dueDate={todo.dueDate}
                   logo={todo.logo}
                   taskGroup={todo.taskGroup}

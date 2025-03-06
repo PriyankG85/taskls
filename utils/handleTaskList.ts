@@ -43,6 +43,7 @@ export const handleAddTaskList = async ({
     JSON.stringify([...taskGroups, groupData])
   );
   setTaskGroups([...taskGroups, groupData]);
+  return "success";
 };
 
 export const handleDeleteTaskList = async (
@@ -64,36 +65,51 @@ export const handleDeleteTaskList = async (
   setDataToLocalStorage("taskGroups", JSON.stringify(newGroups));
 };
 
-export const handleRenameList = async ({
-  listTitle,
+export const handleEditList = async ({
+  logo,
+  oldListTitle,
+  newListTitle,
   taskGroups,
   todos,
   setTaskGroups,
   setTodos,
-  prompt,
 }: {
-  listTitle: string;
+  logo?: string;
+  oldListTitle: string;
+  newListTitle: string;
   taskGroups: TaskGroup[];
   todos: TaskProps[];
   setTaskGroups: (groups: TaskGroup[]) => void;
   setTodos: (todos: TaskProps[]) => void;
-  prompt: (message: string) => Promise<string>;
 }) => {
-  const input = await prompt("Enter a new name for the list");
-  if (input.length !== 0) {
+  let nameExists = false;
+
+  taskGroups.forEach((group: any) => {
+    if (group.name === newListTitle.trim()) nameExists = true;
+  });
+
+  if (nameExists) {
+    ToastAndroid.show("A List exists with this name.", 5);
+    return;
+  }
+
+  if (newListTitle.length !== 0) {
     const modifiedGroups = taskGroups.map((group: TaskGroup) =>
-      group.name === listTitle
+      group.name === oldListTitle
         ? {
             ...group,
-            name: input.length === 0 ? group.name : input,
+            name: newListTitle === group.name ? group.name : newListTitle,
+            img: logo,
           }
         : group
     );
     const modifiedTasks = todos.map((task: TaskProps) =>
-      task.taskGroup === listTitle
+      task.taskGroup === oldListTitle
         ? {
             ...task,
-            taskGroup: input.length === 0 ? task.taskGroup : input,
+            taskGroup:
+              newListTitle === task.taskGroup ? task.taskGroup : newListTitle,
+            logo,
           }
         : task
     );
@@ -102,4 +118,5 @@ export const handleRenameList = async ({
     setTaskGroups(modifiedGroups);
     setDataToLocalStorage("taskGroups", JSON.stringify(modifiedGroups));
   }
+  return { logo, newListTitle };
 };

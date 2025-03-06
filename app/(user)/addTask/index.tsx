@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import TodosContext from "@/context/userTodos";
 import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
 import * as Notifications from "expo-notifications";
@@ -37,7 +37,12 @@ const AddTask = () => {
   const { todos, setTodos } = useContext(TodosContext);
   const { taskGroups } = useContext(TodosContext);
 
-  const [taskGroup, setTaskGroup] = useState(taskGroups[0].name);
+  const { taskGroup: groupNameInParams }: { taskGroup: string } =
+    useLocalSearchParams();
+
+  const [taskGroup, setTaskGroup] = useState(
+    groupNameInParams ?? taskGroups[0].name
+  );
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [dueDate, setDueDate] = useState({
@@ -128,7 +133,7 @@ const AddTask = () => {
   };
 
   return (
-    <ScrollView className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100">
+    <ScrollView className="flex-1 p-5 pt-7">
       <View style={{ gap: 20 }}>
         <Text
           className={`font-Metamorphous text-3xl ${
@@ -166,7 +171,7 @@ const AddTask = () => {
 
       <TouchableOpacity
         activeOpacity={0.75}
-        className="py-4 my-14 rounded-xl bg-dark-accent-100"
+        className="py-4 mb-20 rounded-xl bg-dark-accent-100"
         onPress={handleAddTask}
       >
         <Text className="text-dark-text-100 text-xl text-center font-extrabold">

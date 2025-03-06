@@ -12,11 +12,16 @@ import { router } from "expo-router";
 import { TaskProps } from "@/types/taskProps";
 import { useColorScheme } from "nativewind";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
+import { Animated } from "react-native";
+import ScrollYContext from "@/context/scrollY";
+import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
 
 const TodaysTasks = () => {
   const dark = useColorScheme().colorScheme === "dark";
   const today = new Date();
   const { todos }: { todos: TaskProps[] } = useContext(TodosContext);
+  const scrollY: Animated.Value = useContext(ScrollYContext);
+
   const todaysTodos = todos.filter((todo) => {
     const todayDate = today.toISOString().split("T")[0];
     const taskDate = todo.dueDate?.date
@@ -46,7 +51,16 @@ const TodaysTasks = () => {
   return (
     <Suspense fallback={<LoadingIndicator />}>
       <ScrollView
-        className="flex-1 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: { contentOffset: { y: scrollY } },
+            },
+          ],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        className="flex-1 pt-7 pb-16 dark:bg-dark-bg-100 bg-light-bg-100"
         contentContainerStyle={{ gap: 25 }}
       >
         <View className="gap-1 px-5">
@@ -88,7 +102,7 @@ const TodaysTasks = () => {
           ))}
         </ScrollView>
 
-        <View className="gap-[10px] px-5">
+        <View className="gap-4 px-5">
           {todaysTodos.length === 0 ? (
             <Text
               className={`text-lg text-center ${
@@ -107,8 +121,9 @@ const TodaysTasks = () => {
             </Text>
           ) : (
             todosToDisplay.map((todo, i) => (
-              <TouchableOpacity
-                key={i}
+              <TaskControlsMenuWrapper
+                key={todo.taskId}
+                taskId={todo.taskId}
                 activeOpacity={0.75}
                 onPress={() =>
                   router.push({
@@ -129,12 +144,13 @@ const TodaysTasks = () => {
                   taskId={todo.taskId}
                   notificationId={todo.notificationId}
                   taskTitle={todo.taskTitle}
+                  taskDescription={todo.taskDescription}
                   dueDate={todo.dueDate}
                   logo={todo.logo}
                   taskGroup={todo.taskGroup}
                   completed={todo.completed}
                 />
-              </TouchableOpacity>
+              </TaskControlsMenuWrapper>
             ))
           )}
         </View>

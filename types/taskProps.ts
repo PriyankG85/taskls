@@ -3,7 +3,7 @@ export type TaskProps = {
   taskId: string;
   taskGroup: string;
   taskTitle: string;
-  taskDescription?: string;
+  taskDescription: string;
   dueDate?: { date: string; time: string } | undefined;
   logo?: string;
   completed?: boolean;

@@ -1,18 +1,14 @@
 import Header from "@/components/global/Header";
 import TodosContext from "@/context/userTodos";
 import UserContext from "@/context/userdetails";
-import {
-  getDataFromLocalStorage,
-  setDataToLocalStorage,
-} from "@/hooks/useHandleLocalStorage";
+import { getDataFromLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useContext, useEffect, useState } from "react";
 import { useColorScheme } from "nativewind";
-import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TaskProps } from "@/types/taskProps";
-import parseDateString from "@/utils/parseDateString";
+import AddTaskListProvider from "@/components/global/addTaskListProvider";
+import { View } from "moti";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme().colorScheme;
@@ -21,23 +17,9 @@ export default function RootLayout() {
   const [taskGroups, setTaskGroups] = useState([]);
 
   useEffect(() => {
-    const migrateExistingDates = async (existingTodos: TaskProps[]) => {
-      const migrationFlag = await AsyncStorage.getItem("dateMigrationComplete");
-
-      if (!migrationFlag) {
-        // Perform the migration
-        const updatedTodos = migrateDates(existingTodos);
-        setTodos(updatedTodos); // Update state
-
-        // Set the flag so migration doesn't run again
-        await AsyncStorage.setItem("dateMigrationComplete", "true");
-      }
-    };
-
     getDataFromLocalStorage("todos").then((value) => {
       if (value) {
         setTodos(JSON.parse(value));
-        migrateExistingDates(JSON.parse(value));
       }
     });
 
@@ -49,48 +31,28 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <SafeAreaView className="dark:bg-dark-bg-300 bg-light-bg-300 flex-1">
+    <View className="dark:bg-dark-bg-100 bg-light-bg-100 flex-1">
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-
-      <Header name={name} />
 
       <TodosContext.Provider
         value={{ todos, setTodos, taskGroups, setTaskGroups }}
       >
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "transparent" },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="tasksInGroup/index" />
-          <Stack.Screen name="taskPreview/index" />
-        </Stack>
+        <AddTaskListProvider>
+          <Header name={name} />
+
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "transparent" },
+              animation: "slide_from_right",
+              animationDuration: 200,
+              presentation: "card",
+              gestureEnabled: true,
+              gestureDirection: "horizontal",
+            }}
+          />
+        </AddTaskListProvider>
       </TodosContext.Provider>
-    </SafeAreaView>
+    </View>
   );
 }
-
-const migrateDates = (todos: TaskProps[]) => {
-  const updatedTodos = todos.map((todo) => {
-    if (todo.dueDate?.date && typeof todo.dueDate.date === "string") {
-      // Parse the old date format
-      const parsedDate = parseDateString(todo.dueDate.date);
-
-      // Convert to ISO 8601
-      const isoDate = parsedDate.toISOString();
-
-      return {
-        ...todo,
-        dueDate: {
-          ...todo.dueDate,
-          date: isoDate,
-        },
-      };
-    }
-    return todo;
-  });
-  setDataToLocalStorage("todos", JSON.stringify(updatedTodos)); // Save back to local storage
-  return updatedTodos;
-};

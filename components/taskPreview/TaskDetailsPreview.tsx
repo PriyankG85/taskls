@@ -1,20 +1,22 @@
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { TaskGroup } from "@/types/taskGroupProps";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { TextInput, Image } from "react-native";
-import { CalendarClock, CalendarDays, FileQuestion } from "lucide-react-native";
+import { CalendarClock, CalendarDays } from "lucide-react-native";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import TodosContext from "@/context/userTodos";
-import NewTaskGroup from "../global/newTaskGroup";
 import CheckBox from "../global/CheckBox";
+import AddTaskListContext from "@/context/addTaskList";
+import TextAvatar from "../global/TextAvatar";
+import RichTextEditor from "./RichTextEditor";
 
 interface TaskDetailsPreviewProps {
   dark: boolean;
   type: "add" | "preview";
   taskGroup: string;
   taskTitle: string;
-  taskDescription: string | undefined;
+  taskDescription: string;
   dueDate: { date: string; time: string } | undefined;
   logo?: string;
   checked?: boolean;
@@ -50,7 +52,7 @@ const TaskDetailsPreview = ({
   taskTitleContainerRef,
 }: TaskDetailsPreviewProps) => {
   const { taskGroups }: { taskGroups: TaskGroup[] } = useContext(TodosContext);
-  const [modalVisible, setModalVisible] = useState(false);
+  const { show } = useContext(AddTaskListContext);
 
   return (
     <View className="gap-y-5 pb-20">
@@ -61,13 +63,13 @@ const TaskDetailsPreview = ({
               dark ? "bg-dark-accent-100" : "bg-light-bg-200"
             } justify-center items-center`}
           >
-            {logo ? (
+            {logo && logo !== "" ? (
               <Image
                 source={{ uri: logo }}
                 className="w-full h-full rounded-xl"
               />
             ) : (
-              <FileQuestion size={28} color={dark ? "#ffffff" : "#000000"} />
+              <TextAvatar text={taskGroup} />
             )}
           </View>
           <View>
@@ -76,7 +78,7 @@ const TaskDetailsPreview = ({
                 dark ? "text-dark-text-200" : "text-light-text-200"
               } text-sm`}
             >
-              Task List
+              List
             </Text>
             <Text
               className={`${
@@ -93,7 +95,7 @@ const TaskDetailsPreview = ({
             mode="dropdown"
             selectedValue={"Daily Work"}
             onValueChange={(val) => {
-              if (val === "__+__") setModalVisible(true);
+              if (val === "__+__") show();
               else setTaskGroup && setTaskGroup(val);
             }}
             style={{ width: 45, height: 45 }}
@@ -133,12 +135,14 @@ const TaskDetailsPreview = ({
             dark ? "text-dark-text-200" : "text-light-text-200"
           } text-sm`}
         >
-          Task Name
+          Title
         </Text>
+
+        {/* TODO: Make the text in all TextInputs selectable in the preview mode */}
         <TextInput
           ref={taskTitleRef as React.RefObject<TextInput> | undefined}
           multiline
-          placeholder="Task Name"
+          placeholder="Enter task title..."
           value={taskTitle}
           onChangeText={(text) => {
             taskTitleContainerRef?.current?.setNativeProps({
@@ -148,33 +152,33 @@ const TaskDetailsPreview = ({
           }}
           editable={type === "add"}
           placeholderTextColor={dark ? "#ffffff50" : "#00000050"}
-          className={`dark:text-white text-black text-lg font-spaceMonoBold`}
+          className={`dark:text-white text-black text-lg`}
+          style={{
+            fontFamily:
+              "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+          }}
         />
       </View>
 
-      <View className={`p-4 rounded-xl dark:bg-dark-bg-300 bg-light-bg-300`}>
-        <Text className={`dark:text-dark-text-200 text-light-text-200 text-sm`}>
-          Task Description
-        </Text>
-        <ScrollView style={{ maxHeight: 180 }}>
-          <TextInput
-            multiline
-            textAlignVertical="top"
-            placeholder={
-              taskDescription === "" && type === "preview"
-                ? "No Description"
-                : "Task Description"
-            }
-            placeholderTextColor={dark ? "#ffffff50" : "#00000050"}
+      {taskDescription === "" && type === "preview" ? null : (
+        <View
+          className={`gap-2 rounded-xl dark:bg-dark-bg-300 bg-light-bg-300 overflow-hidden`}
+        >
+          <Text
+            className={`dark:text-dark-text-200 text-light-text-200 text-sm mt-4 ml-4`}
+          >
+            Description
+          </Text>
+          <RichTextEditor
             value={taskDescription}
-            onChangeText={setTaskDescription}
+            onChange={(e) => setTaskDescription && setTaskDescription(e)}
             editable={type === "add"}
-            className={`${
-              dark ? "text-white" : "text-black"
-            } text-lg font-spaceMonoBold`}
+            placeholder={`Enter task description...`}
+            dom={{ matchContents: true }}
           />
-        </ScrollView>
-      </View>
+        </View>
+      )}
+
       <View
         className={`flex-row justify-between items-center p-4 rounded-xl dark:bg-dark-bg-300 bg-light-bg-300`}
       >
@@ -274,8 +278,6 @@ const TaskDetailsPreview = ({
           )}
         </View>
       </View>
-
-      <NewTaskGroup visible={modalVisible} setVisible={setModalVisible} />
     </View>
   );
 };

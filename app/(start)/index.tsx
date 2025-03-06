@@ -58,6 +58,7 @@ const Start = () => {
 
   return (
     <GlassmorphicBackground
+      className="flex-1"
       gradientColors={["#002855", "#4c669f"]}
       blurIntensity={70}
     >

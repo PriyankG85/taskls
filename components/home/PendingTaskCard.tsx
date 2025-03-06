@@ -62,7 +62,7 @@ const PendingTaskCard = memo(
             <Box className="flex-grow p-2.5 min-w-64 max-w-[320px] min-h-32 gap-2 rounded-2xl overflow-hidden shadow-md shadow-background-dark">
               <BlurView
                 experimentalBlurMethod="dimezisBlurView"
-                intensity={90}
+                intensity={100}
                 tint={dark ? "dark" : "light"}
                 className="absolute top-0 left-0 right-0 bottom-0"
               />

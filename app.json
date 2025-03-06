@@ -48,7 +48,9 @@
       }
     },
     "owner": "priyankg85",
-    "runtimeVersion": "^1.0.1",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "updates": {
       "url": "https://u.expo.dev/3b412207-fc3f-4d30-9d44-6722cd079df1"
     }
