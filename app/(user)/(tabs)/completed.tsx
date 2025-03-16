@@ -1,4 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  Animated as NativeAnimated,
+} from "react-native";
 import React, { Suspense, useContext } from "react";
 import TodosContext from "@/context/userTodos";
 import TaskCard from "@/components/tabs/TaskCard";
@@ -7,40 +13,47 @@ import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { TaskProps } from "@/types/taskProps";
 import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
-import { Animated } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import ScrollYContext from "@/context/scrollY";
+import { TaskGroup } from "@/types/taskGroupProps";
+import { useAlertDialog } from "@/hooks/useAlertDialog";
+import { useColorScheme } from "nativewind";
 
 const Completed = () => {
   const router = useRouter();
   const {
     todos,
     setTodos,
-  }: { todos: TaskProps[]; setTodos(list: TaskProps[]): void } =
-    useContext(TodosContext);
-  const scrollY: Animated.Value = useContext(ScrollYContext);
+    taskGroups,
+  }: {
+    todos: TaskProps[];
+    setTodos(list: TaskProps[]): void;
+    taskGroups: TaskGroup[];
+  } = useContext(TodosContext);
+  const dark = useColorScheme().colorScheme === "dark";
+  const alertDialog = useAlertDialog();
 
-  const completedTodos = todos.filter((todo) => todo.completed === true);
+  const [selectedList, setSelectedList] = React.useState("All");
+  const scrollY: NativeAnimated.Value = useContext(ScrollYContext);
+
+  const completedTodos = todos
+    .filter((todo) => todo.completed === true)
+    .reverse();
 
   const handleClear = () => {
-    const remainingTodos = todos.filter((todo) => todo.completed !== true);
-    setDataToLocalStorage("todos", JSON.stringify(remainingTodos));
-    setTodos(remainingTodos);
+    alertDialog.show(
+      `Sure want to permanently remove all completed tasks?`,
+      () => {
+        const remainingTodos = todos.filter((todo) => todo.completed !== true);
+        setDataToLocalStorage("todos", JSON.stringify(remainingTodos));
+        setTodos(remainingTodos);
+      }
+    );
   };
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <ScrollView
-        onScroll={Animated.event(
-          [
-            {
-              nativeEvent: { contentOffset: { y: scrollY } },
-            },
-          ],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        className="flex-1 p-5 pt-10 pb-16"
-      >
+      <View className="flex-1 px-5 pt-10 gap-6">
         <View className="flex-row items-center justify-between">
           <Text className={`font-Metamorphous text-3xl text-typography-950`}>
             Completed Tasks
@@ -57,47 +70,94 @@ const Completed = () => {
           </TouchableOpacity>
         </View>
 
-        <View className="gap-y-2 mt-5">
-          {completedTodos.length === 0 ? (
-            <Text className={`text-lg text-typography-500`}>
+        <Animated.ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2 items-center"
+          className="max-h-[36px]"
+          layout={LinearTransition}
+        >
+          {["All", ...taskGroups.map((group) => group.name)].map((item) => (
+            <Pressable
+              key={item}
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+                foreground: true,
+              }}
+              className={`rounded-lg bg-background-50 px-7 py-2 overflow-hidden ${
+                selectedList === item && "border border-outline-500"
+              }`}
+              onPress={() => setSelectedList(item)}
+            >
+              <Text
+                className={`text-base font-roboto text-typography-400 ${
+                  selectedList === item && "text-typography-900 font-extrabold"
+                }`}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          ))}
+        </Animated.ScrollView>
+
+        <Animated.FlatList
+          className="flex-1"
+          onScroll={NativeAnimated.event(
+            [
+              {
+                nativeEvent: { contentOffset: { y: scrollY } },
+              },
+            ],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          data={completedTodos.filter(
+            (todo) => todo.taskGroup === selectedList || selectedList === "All"
+          )}
+          keyExtractor={(item) => item.taskId}
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="gap-2 pb-20"
+          itemLayoutAnimation={LinearTransition}
+          renderItem={({ item: todo }) => (
+            <TaskControlsMenuWrapper
+              key={todo.taskId}
+              taskId={todo.taskId}
+              onPress={() =>
+                router.push({
+                  pathname: "/taskPreview",
+                  params: {
+                    priority: todo.priority,
+                    taskGroup: todo.taskGroup,
+                    taskTitle: todo.taskTitle,
+                    taskId: todo.taskId,
+                    notificationId: todo.notificationId,
+                    taskDescription: todo.taskDescription,
+                    dueDate: JSON.stringify(todo.dueDate),
+                    logo: todo.logo,
+                  },
+                })
+              }
+            >
+              <TaskCard
+                priority={todo.priority}
+                taskId={todo.taskId}
+                notificationId={todo.notificationId}
+                taskTitle={todo.taskTitle}
+                taskDescription={todo.taskDescription}
+                dueDate={todo.dueDate}
+                logo={todo.logo}
+                taskGroup={todo.taskGroup}
+                completed={todo.completed}
+              />
+            </TaskControlsMenuWrapper>
+          )}
+          ListEmptyComponent={
+            <Text className={`text-lg text-center text-typography-500`}>
               No tasks completed!
             </Text>
-          ) : (
-            completedTodos.map((todo) => (
-              <TaskControlsMenuWrapper
-                key={todo.taskId}
-                taskId={todo.taskId}
-                activeOpacity={0.75}
-                onPress={() =>
-                  router.push({
-                    pathname: "/taskPreview",
-                    params: {
-                      taskGroup: todo.taskGroup,
-                      taskTitle: todo.taskTitle,
-                      taskId: todo.taskId,
-                      notificationId: todo.notificationId,
-                      taskDescription: todo.taskDescription,
-                      dueDate: JSON.stringify(todo.dueDate),
-                      logo: todo.logo,
-                    },
-                  })
-                }
-              >
-                <TaskCard
-                  taskId={todo.taskId}
-                  notificationId={todo.notificationId}
-                  taskTitle={todo.taskTitle}
-                  taskDescription={todo.taskDescription}
-                  dueDate={todo.dueDate}
-                  logo={todo.logo}
-                  taskGroup={todo.taskGroup}
-                  completed={todo.completed}
-                />
-              </TaskControlsMenuWrapper>
-            ))
-          )}
-        </View>
-      </ScrollView>
+          }
+        />
+      </View>
     </Suspense>
   );
 };

@@ -1,26 +1,32 @@
 import {
   View,
   Text,
-  ScrollView,
   Pressable,
-  TouchableOpacity,
+  Animated as NativeAnimated,
 } from "react-native";
-import React, { Suspense, useContext, useEffect, useState } from "react";
+import React, { Suspense, useContext, useState } from "react";
 import TodaysTaskCard from "@/components/tabs/TaskCard";
 import TodosContext from "@/context/userTodos";
 import { router } from "expo-router";
 import { TaskProps } from "@/types/taskProps";
 import { useColorScheme } from "nativewind";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
-import { Animated } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import ScrollYContext from "@/context/scrollY";
 import TaskControlsMenuWrapper from "@/components/global/TaskControlsMenuWrapper";
+import { Clock, Flag, List, SlidersHorizontal } from "lucide-react-native";
+import FilterTasksDialog, {
+  FilterCategory,
+  FilterSelections,
+} from "@/components/global/FilterTasksDialog";
+import { TaskGroup } from "@/types/taskGroupProps";
 
 const TodaysTasks = () => {
   const dark = useColorScheme().colorScheme === "dark";
   const today = new Date();
-  const { todos }: { todos: TaskProps[] } = useContext(TodosContext);
-  const scrollY: Animated.Value = useContext(ScrollYContext);
+  const { todos, taskGroups }: { todos: TaskProps[]; taskGroups: TaskGroup[] } =
+    useContext(TodosContext);
+  const scrollY: NativeAnimated.Value = useContext(ScrollYContext);
 
   const todaysTodos = todos.filter((todo) => {
     const todayDate = today.toISOString().split("T")[0];
@@ -29,40 +35,97 @@ const TodaysTasks = () => {
       : undefined;
     return taskDate === todayDate;
   });
-  const [selected, setSelected] = useState("All");
   const [todosToDisplay, setTodosToDisplay] = useState(todaysTodos);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterSelections>({});
 
-  useEffect(() => {
+  const filtersOtherThanStatusCount = () => {
+    let count = 0;
+    Object.keys(activeFilters).map((key) => {
+      if (key === "status") return;
+      let value = activeFilters[key];
+      if (Array.isArray(value)) count += value.length;
+      else count += 1;
+    });
+    return count;
+  };
+
+  React.useEffect(() => {
     setTodosToDisplay(todaysTodos);
+  }, [todos]);
 
-    if (selected === "All") {
-      setTodosToDisplay(todaysTodos);
-    } else if (selected === "In Progress") {
-      setTodosToDisplay(
-        todaysTodos.filter(
-          (todo) => todo.completed === false || !todo.completed
+  // Define filter categories
+  const filterCategories: FilterCategory[] = [
+    {
+      id: "status",
+      title: "Status",
+      icon: Clock,
+      options: [
+        { id: "all", label: "All" },
+        { id: "in-progress", label: "In Progress" },
+        { id: "completed", label: "Completed" },
+      ],
+    },
+    {
+      id: "priority",
+      title: "Priority",
+      icon: Flag,
+      options: [
+        { id: "High", label: "High" },
+        { id: "Medium", label: "Medium" },
+        { id: "Low", label: "Low" },
+      ],
+      multiSelect: true,
+    },
+    {
+      id: "list",
+      title: "List",
+      icon: List,
+      options: taskGroups.map((group) => ({
+        id: group.name,
+        label: group.name,
+      })),
+    },
+  ];
+
+  const applyFilters = (selections: FilterSelections) => {
+    setActiveFilters(selections);
+
+    // Filter tasks based on selections
+    let filtered = [...todaysTodos];
+
+    //* Apply status filter
+    if (selections.status) {
+      filtered =
+        selections.status === "all"
+          ? filtered
+          : filtered.filter(
+              (task) =>
+                (task.completed ?? false) ===
+                (selections.status === "completed")
+            );
+    }
+
+    //* Apply priority filter
+    if (selections.priority) {
+      filtered = filtered.filter((task) =>
+        (selections.priority as string[]).some(
+          (priority) => priority === (task.priority ?? "Medium")
         )
       );
-    } else if (selected === "Completed") {
-      setTodosToDisplay(todaysTodos.filter((todo) => todo.completed === true));
     }
-  }, [todos, selected]);
+
+    //* Apply list filter
+    if (selections.list) {
+      filtered = filtered.filter((task) => task.taskGroup === selections.list);
+    }
+
+    setTodosToDisplay(filtered);
+  };
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <ScrollView
-        onScroll={Animated.event(
-          [
-            {
-              nativeEvent: { contentOffset: { y: scrollY } },
-            },
-          ],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        className="flex-1 pt-7 pb-16 dark:bg-dark-bg-100 bg-light-bg-100"
-        contentContainerStyle={{ gap: 25 }}
-      >
+      <View className="flex-1 pt-7 gap-6">
         <View className="gap-1 px-5">
           <Text
             className={`font-Metamorphous text-3xl dark:text-dark-text-100 text-light-text-100`}
@@ -70,7 +133,7 @@ const TodaysTasks = () => {
             Today's Tasks
           </Text>
           <Text
-            className={`text-xl dark:text-blue-500 text-blue-600 font-spaceMonoBold`}
+            className={`text-xl dark:text-blue-500 text-blue-600 font-roboto font-bold`}
           >
             {today.toLocaleDateString("en-US", {
               month: "short",
@@ -80,83 +143,133 @@ const TodaysTasks = () => {
           </Text>
         </View>
 
-        <ScrollView
+        <Animated.ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10, paddingLeft: 20 }}
+          contentContainerClassName="gap-[10px] pl-5 items-center"
+          className="max-h-[36px]"
+          layout={LinearTransition}
         >
-          {["All", "In Progress", "Completed"].map((item) => (
-            <Pressable
-              key={item}
-              className="rounded-lg bg-background-0 px-7 py-2"
-              onPress={() => setSelected(item)}
-            >
-              <Text
-                className={`text-base font-roboto text-typography-400 ${
-                  selected === item && "text-typography-900 font-extrabold"
+          {filterCategories[0].options.map((item) => {
+            let active =
+              !Object.keys(activeFilters).includes("status") &&
+              item.id === "all"
+                ? true
+                : activeFilters.status === item.id;
+            return (
+              <Pressable
+                key={item.id}
+                android_ripple={{
+                  color: dark ? "#e0e0e010" : "#5c5c5c10",
+                  foreground: true,
+                }}
+                className={`rounded-lg bg-background-50 px-7 py-2 overflow-hidden ${
+                  active && "border border-outline-500"
                 }`}
-              >
-                {item}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <View className="gap-4 px-5">
-          {todaysTodos.length === 0 ? (
-            <Text
-              className={`text-lg text-center ${
-                dark ? "text-dark-text-200/60" : "text-light-text-200/60"
-              }`}
-            >
-              No Tasks for Today!
-            </Text>
-          ) : todosToDisplay.length === 0 ? (
-            <Text
-              className={`text-lg text-center ${
-                dark ? "text-dark-text-200/60" : "text-light-text-200/60"
-              }`}
-            >
-              No Tasks
-            </Text>
-          ) : (
-            todosToDisplay.map((todo, i) => (
-              <TaskControlsMenuWrapper
-                key={todo.taskId}
-                taskId={todo.taskId}
-                activeOpacity={0.75}
                 onPress={() =>
-                  router.push({
-                    pathname: "/taskPreview",
-                    params: {
-                      taskGroup: todo.taskGroup,
-                      taskTitle: todo.taskTitle,
-                      taskId: todo.taskId,
-                      notificationId: todo.notificationId,
-                      taskDescription: todo.taskDescription,
-                      dueDate: JSON.stringify(todo.dueDate),
-                      logo: todo.logo,
-                    },
-                  })
+                  applyFilters({ ...activeFilters, status: item.id })
                 }
               >
-                <TodaysTaskCard
-                  taskId={todo.taskId}
-                  notificationId={todo.notificationId}
-                  taskTitle={todo.taskTitle}
-                  taskDescription={todo.taskDescription}
-                  dueDate={todo.dueDate}
-                  logo={todo.logo}
-                  taskGroup={todo.taskGroup}
-                  completed={todo.completed}
-                />
-              </TaskControlsMenuWrapper>
-            ))
-          )}
-        </View>
+                <Text
+                  className={`text-base font-roboto text-typography-400 ${
+                    active && "text-typography-900 font-extrabold"
+                  }`}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
 
-        <View className="bottom_tabs_safe_area h-[35px]" />
-      </ScrollView>
+          <View className="relative">
+            <Pressable
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+                foreground: true,
+              }}
+              className="rounded-lg size-10 justify-center items-center bg-background-50 overflow-hidden"
+              onPress={() => setIsFilterVisible(true)}
+            >
+              <SlidersHorizontal
+                size={20}
+                strokeWidth={1.5}
+                color={dark ? "#d1d5db" : "#6b7280"}
+              />
+            </Pressable>
+            {filtersOtherThanStatusCount() > 0 && (
+              <View className="absolute bottom-0 -right-2 bg-neutral-200 dark:bg-neutral-700 px-2 py-0.5 rounded-full">
+                <Text className="text-xs text-neutral-800 dark:text-neutral-200">
+                  {filtersOtherThanStatusCount()}
+                </Text>
+              </View>
+            )}
+          </View>
+        </Animated.ScrollView>
+
+        <Animated.FlatList
+          onScroll={NativeAnimated.event(
+            [
+              {
+                nativeEvent: { contentOffset: { y: scrollY } },
+              },
+            ],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          data={todosToDisplay.slice().reverse()}
+          keyExtractor={(item) => item.taskId}
+          showsVerticalScrollIndicator={false}
+          className="flex-1"
+          contentContainerClassName="gap-2 px-5 pb-20"
+          itemLayoutAnimation={LinearTransition}
+          renderItem={({ item: todo }) => (
+            <TaskControlsMenuWrapper
+              key={todo.taskId}
+              taskId={todo.taskId}
+              onPress={() =>
+                router.push({
+                  pathname: "/taskPreview",
+                  params: {
+                    priority: todo.priority,
+                    taskGroup: todo.taskGroup,
+                    taskTitle: todo.taskTitle,
+                    taskId: todo.taskId,
+                    notificationId: todo.notificationId,
+                    taskDescription: todo.taskDescription,
+                    dueDate: JSON.stringify(todo.dueDate),
+                    logo: todo.logo,
+                  },
+                })
+              }
+            >
+              <TodaysTaskCard
+                priority={todo.priority}
+                taskId={todo.taskId}
+                notificationId={todo.notificationId}
+                taskTitle={todo.taskTitle}
+                taskDescription={todo.taskDescription}
+                dueDate={todo.dueDate}
+                logo={todo.logo}
+                taskGroup={todo.taskGroup}
+                completed={todo.completed}
+              />
+            </TaskControlsMenuWrapper>
+          )}
+          ListEmptyComponent={
+            <Text className={`text-lg text-center text-typography-400`}>
+              No Tasks
+            </Text>
+          }
+        />
+      </View>
+
+      <FilterTasksDialog
+        isVisible={isFilterVisible}
+        onClose={() => setIsFilterVisible(false)}
+        onApply={applyFilters}
+        categories={filterCategories}
+        initialSelections={activeFilters}
+      />
     </Suspense>
   );
 };

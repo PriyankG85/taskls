@@ -2,15 +2,14 @@ import React, { useContext } from "react";
 import { useAlertDialog } from "@/hooks/useAlertDialog";
 import { Menu, MenuItem, MenuItemLabel, MenuSeparator } from "../ui/menu";
 import { Pencil, Trash2 } from "lucide-react-native";
-import { TouchableOpacity, TouchableOpacityProps } from "react-native";
+import { Pressable, PressableProps } from "react-native";
 import TodosContext from "@/context/userTodos";
 import { TaskProps } from "@/types/taskProps";
-import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { router } from "expo-router";
 import { handleDeleteTask } from "@/utils/handleTask";
 import { useColorScheme } from "nativewind";
 
-interface Props extends TouchableOpacityProps {
+interface Props extends PressableProps {
   children: React.ReactElement;
   taskId: string;
 }
@@ -20,8 +19,8 @@ const TaskControlsMenuWrapper: React.FC<Props> = ({
   taskId,
   ...props
 }) => {
-  const alertDialog = useAlertDialog();
   const dark = useColorScheme().colorScheme === "dark";
+  const alertDialog = useAlertDialog();
 
   const [showMenu, setShowMenu] = React.useState(false);
 
@@ -52,24 +51,24 @@ const TaskControlsMenuWrapper: React.FC<Props> = ({
       offset={-7}
       className={"bg-background-muted shadow-sm"}
       trigger={(triggerProps) => (
-        <TouchableOpacity
-          activeOpacity={0.8}
+        <Pressable
+          android_ripple={{
+            color: dark ? "#e0e0e010" : "#5c5c5c10",
+            foreground: true,
+          }}
+          className="rounded-xl overflow-hidden"
           onLongPress={() => setShowMenu(true)}
           aria-expanded={triggerProps["aria-expanded"]}
           ref={triggerProps.ref}
           {...props}
         >
           {children}
-        </TouchableOpacity>
+        </Pressable>
       )}
     >
       <MenuItem
-        android_ripple={{
-          color: dark ? "#6E6E6E50" : "#BDBDBD50",
-          radius: 120,
-        }}
         onPress={handleEditTask}
-        className="gap-2 active:bg-secondary-700"
+        className="gap-2 active:opacity-70"
         textValue="Edit Task"
       >
         <Pencil size={16} color={"#3B82F6"} />
@@ -79,16 +78,12 @@ const TaskControlsMenuWrapper: React.FC<Props> = ({
       <MenuSeparator />
 
       <MenuItem
-        android_ripple={{
-          color: dark ? "#6E6E6E50" : "#BDBDBD50",
-          radius: 120,
-        }}
         onPress={() =>
-          alertDialog.show(`Sure want to delete the task?`, () =>
+          alertDialog.show(`Sure want to permanently delete the task?`, () =>
             handleRemoveTask(taskId)
           )
         }
-        className="gap-2 active:bg-secondary-700"
+        className="gap-2 active:opacity-70"
         textValue="Delete Task"
       >
         <Trash2 size={16} color={"#B91C1C"} />

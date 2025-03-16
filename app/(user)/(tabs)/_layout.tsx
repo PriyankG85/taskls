@@ -1,6 +1,6 @@
 import { Href, router, useSegments } from "expo-router";
 import { Icon } from "@/components/ui/icon";
-import { Animated, Pressable, View } from "react-native";
+import { Animated as NativeAnimated, Pressable, View } from "react-native";
 import {
   Bolt,
   CalendarDays,
@@ -14,6 +14,7 @@ import { Tabs } from "expo-router";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
 import ScrollYContext from "@/context/scrollY";
 import { useColorScheme } from "nativewind";
+import Animated from "react-native-reanimated";
 
 type TabsProps = {
   name: string;
@@ -47,7 +48,7 @@ const tabs: TabsProps = [
 const RootLayout = () => {
   const dark = useColorScheme().colorScheme === "dark";
 
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new NativeAnimated.Value(0)).current;
   const segments = useSegments();
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -61,7 +62,7 @@ const RootLayout = () => {
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <View className="flex-1">
+      <Animated.View className="flex-1">
         <ScrollYContext.Provider value={scrollY}>
           <Tabs
             tabBar={() => (
@@ -116,7 +117,7 @@ const RootLayout = () => {
             ))}
           </Tabs>
         </ScrollYContext.Provider>
-      </View>
+      </Animated.View>
     </Suspense>
   );
 };

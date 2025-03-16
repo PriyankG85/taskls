@@ -5,16 +5,16 @@ const toggleTaskCompleted = (
   todosContext: Array<any>,
   taskId: string,
   notificationId: string | undefined,
-  isCompleted: boolean | undefined
+  currentIsCompleted: boolean | undefined
 ) => {
   const updatedTodos = todosContext.map((todo) => {
     if (todo.taskId === taskId) {
-      return { ...todo, completed: !isCompleted ? true : false };
+      return { ...todo, completed: !currentIsCompleted ? true : false };
     }
     return todo;
   });
 
-  if (!isCompleted && notificationId) cancelNotification(notificationId);
+  if (!currentIsCompleted && notificationId) cancelNotification(notificationId);
   else null;
   setDataToLocalStorage("todos", JSON.stringify(updatedTodos));
   return updatedTodos;

@@ -7,8 +7,9 @@ import { StatusBar } from "expo-status-bar";
 import { useContext, useEffect, useState } from "react";
 import { useColorScheme } from "nativewind";
 import { TaskProps } from "@/types/taskProps";
-import AddTaskListProvider from "@/components/global/addTaskListProvider";
-import { View } from "moti";
+import AddTaskListDialogProvider from "@/components/global/addTaskListProvider";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { View } from "react-native";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme().colorScheme;
@@ -31,28 +32,29 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <View className="dark:bg-dark-bg-100 bg-light-bg-100 flex-1">
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+    <SafeAreaProvider>
+      <View className="dark:bg-dark-bg-100 bg-light-bg-100 flex-1">
+        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
 
-      <TodosContext.Provider
-        value={{ todos, setTodos, taskGroups, setTaskGroups }}
-      >
-        <AddTaskListProvider>
-          <Header name={name} />
+        <TodosContext.Provider
+          value={{ todos, setTodos, taskGroups, setTaskGroups }}
+        >
+          <AddTaskListDialogProvider>
+            <Header name={name} />
 
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: "transparent" },
-              animation: "slide_from_right",
-              animationDuration: 200,
-              presentation: "card",
-              gestureEnabled: true,
-              gestureDirection: "horizontal",
-            }}
-          />
-        </AddTaskListProvider>
-      </TodosContext.Provider>
-    </View>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "transparent" },
+                animation: "slide_from_right",
+                presentation: "card",
+                gestureEnabled: true,
+                gestureDirection: "horizontal",
+              }}
+            />
+          </AddTaskListDialogProvider>
+        </TodosContext.Provider>
+      </View>
+    </SafeAreaProvider>
   );
 }

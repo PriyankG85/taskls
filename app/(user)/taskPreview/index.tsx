@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import React, { useContext } from "react";
 import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
 import { router, useLocalSearchParams } from "expo-router";
-import { CheckCircle, Trash2 } from "lucide-react-native";
+import { Trash2 } from "lucide-react-native";
 import { decodeImgUri } from "@/utils/decodeImgUri";
 import TodosContext from "@/context/userTodos";
 import { useColorScheme } from "nativewind";
@@ -10,6 +10,8 @@ import { useAlertDialog } from "@/hooks/useAlertDialog";
 import { handleDeleteTask } from "@/utils/handleTask";
 import toggleTaskCompleted from "@/hooks/useMarkTaskCompleted";
 import { TaskProps } from "@/types/taskProps";
+import CheckBox from "@/components/global/CheckBox";
+import Animated from "react-native-reanimated";
 
 const TaskPreview = () => {
   const dark = useColorScheme().colorScheme === "dark";
@@ -33,6 +35,7 @@ const TaskPreview = () => {
 
   const taskId = params.taskId as string;
   const notificationId = params.notificationId as string;
+  const priority = params.priority as "Low" | "Medium" | "High";
   const taskGroup = decodeURIComponent(params.taskGroup as string);
   const taskTitle = decodeURIComponent(params.taskTitle as string);
   const taskDescription = decodeURIComponent(params.taskDescription as string);
@@ -49,7 +52,7 @@ const TaskPreview = () => {
   )?.completed;
 
   return (
-    <ScrollView
+    <Animated.ScrollView
       className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
       contentContainerStyle={{ gap: 20 }}
     >
@@ -61,20 +64,16 @@ const TaskPreview = () => {
         >
           Task Preview
         </Text>
-        <View className="flex-row items-center">
-          <TouchableOpacity
-            className="p-1 rounded-full"
-            onPress={() =>
+        <View className="flex-row items-center justify-center gap-2">
+          <CheckBox
+            checked={completed ?? false}
+            setChecked={(val) =>
               setTodos(
                 toggleTaskCompleted(todos, taskId, notificationId, completed)
               )
             }
-          >
-            <CheckCircle
-              size={22}
-              color={completed ? "#4CAF60" : "#9ca3afb3"}
-            />
-          </TouchableOpacity>
+            size={22}
+          />
           <TouchableOpacity
             activeOpacity={0.5}
             onPress={() =>
@@ -88,15 +87,15 @@ const TaskPreview = () => {
       </View>
 
       <TaskDetailsPreview
-        dark={dark}
-        taskGroup={taskGroup as string}
-        taskTitle={taskTitle as string}
-        taskDescription={taskDescription as string}
+        priority={priority}
+        taskGroup={taskGroup}
+        taskTitle={taskTitle}
+        taskDescription={taskDescription}
         dueDate={dueDate}
         logo={decodedLogo}
         type="preview"
       />
-    </ScrollView>
+    </Animated.ScrollView>
   );
 };
 

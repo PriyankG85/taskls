@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   Platform,
   ToastAndroid,
+  Pressable,
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
@@ -54,6 +54,8 @@ const AddTask = () => {
   });
   const [logo, setLogo] = useState<string | undefined>();
   const [checked, setChecked] = useState(true);
+  const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
+  // const [attachments, setAttachments] = useState<DocumentPickerResponse[]>([])
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
@@ -95,41 +97,52 @@ const AddTask = () => {
       return;
     }
 
-    let identifier = null;
-
-    // Scheduling Notifications
-    if (checked) {
-      const notificationId = await scheduleNotification(
-        taskTitle,
-        taskDescription,
-        dueDate.date,
-        dueDate.time
-      );
-      identifier = notificationId;
-    }
-
-    // Saving Task to Local Storage
-    const taskDetails = {
-      taskId: new Date().getTime().toString(),
-      notificationId: identifier === null ? undefined : identifier,
+    console.warn("data: ", {
       taskGroup,
       taskTitle,
       taskDescription,
-      dueDate: checked
-        ? {
-            date: dueDate.date.toISOString(),
-            time: dueDate.time,
-          }
-        : undefined,
+      dueDate,
       logo,
-    };
-    const tasks = [...todos, taskDetails];
-    const dataString = JSON.stringify(tasks);
+      priority,
+    });
 
-    setDataToLocalStorage("todos", dataString);
-    setTodos(tasks);
+    let identifier = null;
 
-    navigation.goBack();
+    // Scheduling Notifications
+    // FIXME: Notifications not working..
+    // if (checked) {
+    //   const notificationId = await scheduleNotification(
+    //     taskTitle,
+    //     taskDescription,
+    //     dueDate.date,
+    //     dueDate.time
+    //   );
+    //   identifier = notificationId;
+    // }
+
+    // // Saving Task to Local Storage
+    // const taskDetails = {
+    //   taskId: new Date().getTime().toString(),
+    //   notificationId: identifier === null ? undefined : identifier,
+    //   taskGroup,
+    //   taskTitle,
+    //   taskDescription,
+    //   dueDate: checked
+    //     ? {
+    //         date: dueDate.date.toISOString(),
+    //         time: dueDate.time,
+    //       }
+    //     : undefined,
+    //   logo,
+    //   priority,
+    // };
+    // const tasks = [...todos, taskDetails];
+    // const dataString = JSON.stringify(tasks);
+
+    // setDataToLocalStorage("todos", dataString);
+    // setTodos(tasks);
+
+    // navigation.goBack();
   };
 
   return (
@@ -144,7 +157,6 @@ const AddTask = () => {
         </Text>
 
         <TaskDetailsPreview
-          dark={dark}
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
@@ -163,21 +175,26 @@ const AddTask = () => {
           setDueDate={setDueDate}
           taskTitleRef={taskTitleRef}
           taskTitleContainerRef={taskTitleContainerRef}
-          type="add"
+          type="add/edit"
           checked={checked}
           setChecked={setChecked}
+          priority={priority}
+          setPriority={setPriority}
         />
       </View>
 
-      <TouchableOpacity
-        activeOpacity={0.75}
-        className="py-4 mb-20 rounded-xl bg-dark-accent-100"
+      <Pressable
+        android_ripple={{
+          color: dark ? "#e0e0e010" : "#5c5c5c10",
+          foreground: true,
+        }}
+        className="py-4 mb-20 rounded-xl bg-dark-accent-100 overflow-hidden"
         onPress={handleAddTask}
       >
         <Text className="text-dark-text-100 text-xl text-center font-extrabold">
           Add Task
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </ScrollView>
   );
 };

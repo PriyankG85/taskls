@@ -1,5 +1,6 @@
 import {
-  Animated,
+  Animated as NativeAnimated,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -12,16 +13,13 @@ import TaskGroupCard from "@/components/home/TaskGroupCard";
 import { Suspense, useContext } from "react";
 import TodosContext from "@/context/userTodos";
 import { TaskProps } from "@/types/taskProps";
-import { Button, ButtonText } from "@/components/ui/button";
-import { HStack } from "@/components/ui/hstack";
-import { VStack } from "@/components/ui/vstack";
 import { TaskGroup } from "@/types/taskGroupProps";
-import { Badge, BadgeText } from "@/components/ui/badge";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
 import ScrollYContext from "@/context/scrollY";
 import { Plus } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 import AddTaskListContext from "@/context/addTaskList";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 export default function Home() {
   const dark = useColorScheme().colorScheme === "dark";
@@ -30,7 +28,7 @@ export default function Home() {
     todos: TaskProps[];
     taskGroups: TaskGroup[];
   }>(TodosContext);
-  const scrollY: Animated.Value = useContext(ScrollYContext);
+  const scrollY: NativeAnimated.Value = useContext(ScrollYContext);
 
   const pendingTodos = todos.filter(
     (todo: TaskProps) => todo.completed === false || !todo.completed
@@ -63,7 +61,7 @@ export default function Home() {
   return (
     <Suspense fallback={<LoadingIndicator />}>
       <ScrollView
-        onScroll={Animated.event(
+        onScroll={NativeAnimated.event(
           [
             {
               nativeEvent: { contentOffset: { y: scrollY } },
@@ -86,23 +84,24 @@ export default function Home() {
                 : "Your today's are\nalmost done!"}
             </Text>
 
-            <Button
-              variant="solid"
-              size="lg"
-              action="primary"
+            <Pressable
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+                foreground: true,
+              }}
               onPress={() => router.push("/todaysTasks")}
-              className="rounded-xl dark:bg-dark-primary-200 bg-background-muted px-10 py-2"
+              className="rounded-xl dark:bg-dark-primary-200 bg-background-muted active:opacity-80 px-10 py-2 overflow-hidden"
             >
-              <ButtonText className="text-typography-950 font-Quattrocento">
+              <Text className="text-typography-950 text-lg font-Quattrocento">
                 View
-              </ButtonText>
-            </Button>
+              </Text>
+            </Pressable>
           </View>
 
           <CircularProgress
             progress={todaysTasksProgress}
             circleColor={"#e0e0e050"}
-            strokeColor={"#e0e0e0"}
+            strokeColor={"#FBFBFB"}
             size={100}
             strokeWidth={10}
           />
@@ -115,67 +114,66 @@ export default function Home() {
                 Pending
               </Text>
 
-              <Badge
-                size="sm"
-                className="dark:bg-dark-primary-300 bg-light-primary-300 rounded-lg"
-              >
-                <BadgeText className="text-xs dark:text-light-text-200 text-dark-text-200">
+              <View className="bg-neutral-200 dark:bg-neutral-700 px-2 py-0.5 rounded-lg">
+                <Text className="text-xs text-neutral-800 dark:text-neutral-200">
                   {pendingTodos.length}
-                </BadgeText>
-              </Badge>
+                </Text>
+              </View>
             </View>
 
-            <TouchableOpacity onPress={() => router.push("/pendingTasks")}>
-              <Text className="text-typography-400 font-Quattrocento">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push("/pendingTasks")}
+              disabled={pendingTodos.length === 0}
+              className="disabled:opacity-70"
+            >
+              <Text className="text-typography-500 font-Quattrocento">
                 View all
               </Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <HStack space="md" className="flex-row items-center p-5">
-              {pendingTodos.length > 0 ? (
-                pendingTodos
-                  .reverse()
-                  .map(
-                    (todo, i) =>
-                      !todo.completed && (
-                        <PendingTaskCard
-                          key={i}
-                          taskId={todo.taskId}
-                          notificationId={todo.notificationId}
-                          taskGroup={todo.taskGroup}
-                          taskTitle={todo.taskTitle}
-                          taskDescription={todo.taskDescription}
-                          logo={todo.logo && todo.logo}
-                          dueDate={todo.dueDate}
-                        />
-                      )
-                  )
-              ) : (
-                <Text className="text-center dark:text-dark-text-200/70 text-light-text-200/70 text-lg font-Quattrocento">
-                  No Pending tasks!
-                </Text>
-              )}
-            </HStack>
-          </ScrollView>
+          <Animated.FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="flex-row items-center p-5 gap-2 grow"
+            itemLayoutAnimation={LinearTransition}
+            data={pendingTodos.slice().reverse()}
+            ListEmptyComponent={
+              <Text className="text-center dark:text-dark-text-200/70 text-light-text-200/70 text-lg font-Quattrocento">
+                No Pending tasks!
+              </Text>
+            }
+            renderItem={({ item: todo }) => (
+              <PendingTaskCard
+                key={todo.taskId}
+                priority={todo.priority}
+                taskId={todo.taskId}
+                notificationId={todo.notificationId}
+                taskGroup={todo.taskGroup}
+                taskTitle={todo.taskTitle}
+                taskDescription={todo.taskDescription}
+                logo={todo.logo && todo.logo}
+                dueDate={todo.dueDate}
+                completed={todo.completed}
+              />
+            )}
+            keyExtractor={(item) => item.taskId}
+          />
         </View>
 
-        <View className="gap-3 px-5">
-          <View className="flex-row justify-between items-center">
+        <View className="gap-3">
+          <View className="flex-row justify-between items-center mx-5">
             <View className="flex-row items-center gap-2">
               <Text className="text-2xl font-Quattrocento dark:text-dark-text-200 text-light-text-200">
                 Task Lists
               </Text>
 
-              <Badge
-                size="sm"
-                className="dark:bg-dark-primary-300 bg-light-primary-300 rounded-lg"
-              >
-                <BadgeText className="text-xs dark:text-light-text-200 text-dark-text-200">
+              <View className="bg-neutral-200 dark:bg-neutral-700 px-2 py-0.5 rounded-lg">
+                <Text className="text-xs text-neutral-800 dark:text-neutral-200">
                   {taskGroups.length}
-                </BadgeText>
-              </Badge>
+                </Text>
+              </View>
             </View>
 
             <TouchableOpacity onPress={show}>
@@ -183,25 +181,31 @@ export default function Home() {
             </TouchableOpacity>
           </View>
 
-          <VStack space="md" reversed>
-            {taskGroups.length === 0 ? (
+          <Animated.FlatList
+            itemLayoutAnimation={LinearTransition}
+            data={taskGroups.slice().reverse()}
+            renderItem={({ item: group }) => (
+              <TaskGroupCard
+                key={group.name}
+                title={group.name}
+                img={group.img}
+                tasks={
+                  todos.filter((todo) => todo.taskGroup === group.name).length
+                }
+                progress={groupProgress(group)}
+              />
+            )}
+            keyExtractor={(item) => item.name}
+            showsVerticalScrollIndicator={false}
+            scrollEventThrottle={16}
+            contentContainerClassName="grow pb-20 gap-2 px-5"
+            ListEmptyComponent={
               <Text className="dark:text-dark-text-200/70 text-light-text-200/70 text-lg font-Quattrocento">
                 No Task Lists!
               </Text>
-            ) : (
-              taskGroups.map((group, i) => (
-                <TaskGroupCard
-                  key={i}
-                  title={group.name}
-                  img={group.img}
-                  tasks={
-                    todos.filter((todo) => todo.taskGroup === group.name).length
-                  }
-                  progress={groupProgress(group)}
-                />
-              ))
-            )}
-          </VStack>
+            }
+            scrollEnabled={false}
+          />
         </View>
       </ScrollView>
     </Suspense>

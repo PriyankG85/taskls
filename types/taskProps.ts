@@ -7,4 +7,5 @@ export type TaskProps = {
   dueDate?: { date: string; time: string } | undefined;
   logo?: string;
   completed?: boolean;
+  priority: "Low" | "Medium" | "High";
 };

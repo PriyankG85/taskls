@@ -8,18 +8,23 @@ import {
   MenuSeparator,
 } from "@/components/ui/menu";
 import { useContext } from "react";
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import AddTaskListContext from "@/context/addTaskList";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Header = ({ name }: { name: string }) => {
   const dark = useColorScheme().colorScheme === "dark";
   const { show } = useContext(AddTaskListContext);
+  const insets = useSafeAreaInsets();
+  const pathname = usePathname();
 
   return (
-    <SafeAreaView className="flex-row py-5 px-7 justify-between items-center">
+    <View
+      style={{ paddingTop: insets.top + 12 }}
+      className="flex-row pb-5 px-7 justify-between items-center"
+    >
       <BlurView
         experimentalBlurMethod="dimezisBlurView"
         tint={dark ? "dark" : "light"}
@@ -40,7 +45,7 @@ const Header = ({ name }: { name: string }) => {
       </BlurView>
 
       <View>
-        <Text className="text-sm font-spaceMonoBold leading-5 dark:text-dark-text-100 text-light-text-100">
+        <Text className="text-sm font-roboto font-bold leading-5 dark:text-dark-text-100 text-light-text-100">
           Hello!{"\n"}
           {name}
         </Text>
@@ -50,8 +55,8 @@ const Header = ({ name }: { name: string }) => {
         <Pressable>
           <Bell
             size={24}
-            fill={dark ? "white" : "#525252"}
-            color={dark ? "white" : "#525252"}
+            fill={dark ? "white" : "#00429a"}
+            color={dark ? "white" : "#00429a"}
           />
         </Pressable>
 
@@ -62,22 +67,19 @@ const Header = ({ name }: { name: string }) => {
             <Pressable {...triggerProps}>
               <PlusCircle
                 size={32}
-                fill={dark ? "white" : "#525252"}
+                fill={dark ? "white" : "#00429a"}
                 color={dark ? "black" : "white"}
                 strokeWidth={1}
               />
             </Pressable>
           )}
-          className={"bg-background-muted shadow-sm rounded-xl right-5"}
+          className={"bg-background-muted shadow rounded-xl right-5"}
         >
           <MenuItem
             textValue="New Task"
             key={"New Task"}
-            android_ripple={{
-              color: dark ? "#6E6E6E50" : "#BDBDBD50",
-              radius: 120,
-            }}
-            onPress={() => router.push("/addTask")}
+            className="active:opacity-70"
+            onPress={() => pathname !== "/addTask" && router.push("/addTask")}
           >
             <MenuItemLabel
               size="lg"
@@ -90,10 +92,7 @@ const Header = ({ name }: { name: string }) => {
           <MenuItem
             textValue="New List"
             key={"New List"}
-            android_ripple={{
-              color: dark ? "#6E6E6E50" : "#BDBDBD50",
-              radius: 120,
-            }}
+            className="active:opacity-70"
             onPress={show}
           >
             <MenuItemLabel
@@ -105,7 +104,7 @@ const Header = ({ name }: { name: string }) => {
           </MenuItem>
         </Menu>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

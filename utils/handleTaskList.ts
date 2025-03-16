@@ -51,18 +51,20 @@ export const handleDeleteTaskList = async (
   setTaskGroups: (groups: TaskGroup[]) => void,
   groupName: string,
   todos: TaskProps[],
-  setTodos: (todos: TaskProps[]) => void
+  setTodos: (todos: TaskProps[]) => void,
+  deleteTasksInList: boolean = false
 ) => {
   const newGroups = taskGroups.filter(
     (group: TaskGroup) => group.name !== groupName
   );
-  const newTodos = todos.filter((todo) => todo.taskGroup !== groupName);
-
-  setDataToLocalStorage("todos", JSON.stringify(newTodos));
-  setTodos(newTodos);
-
   setTaskGroups(newGroups);
   setDataToLocalStorage("taskGroups", JSON.stringify(newGroups));
+
+  if (!deleteTasksInList) return;
+
+  const newTodos = todos.filter((todo) => todo.taskGroup !== groupName);
+  setDataToLocalStorage("todos", JSON.stringify(newTodos));
+  setTodos(newTodos);
 };
 
 export const handleEditList = async ({
@@ -88,8 +90,8 @@ export const handleEditList = async ({
     if (group.name === newListTitle.trim()) nameExists = true;
   });
 
-  if (nameExists) {
-    ToastAndroid.show("A List exists with this name.", 5);
+  if (nameExists && newListTitle !== oldListTitle) {
+    ToastAndroid.show("A List already exists with this name.", 5);
     return;
   }
 

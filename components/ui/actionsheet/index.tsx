@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { H4 } from "@expo/html-elements";
 import { createActionsheet } from "@gluestack-ui/actionsheet";
 import {
   Pressable,
@@ -43,7 +42,7 @@ export const UIActionsheet = createActionsheet({
   VirtualizedList: VirtualizedList,
   FlatList: FlatList,
   SectionList: SectionList,
-  SectionHeaderText: H4,
+  SectionHeaderText: Text,
   Icon: UIIcon,
   AnimatePresence: AnimatePresence,
 });
@@ -94,7 +93,7 @@ cssInterop(PrimitiveIcon, {
 const actionsheetStyle = tva({ base: "w-full h-full web:pointer-events-none" });
 
 const actionsheetContentStyle = tva({
-  base: "rounded-tl-3xl rounded-tr-3xl p-5 pt-2 bg-background-0 web:pointer-events-auto web:select-none shadow-hard-5 border border-b-0 border-outline-100",
+  base: "rounded-tl-3xl rounded-tr-3xl p-5 pt-2 bg-background-0 web:pointer-events-auto web:select-none shadow border border-b-0 border-outline-100",
 });
 
 const actionsheetItemStyle = tva({

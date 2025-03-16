@@ -1,14 +1,10 @@
-import { AlertDialogContext } from "@/components/ui/alert-dialog-provider";
+import {
+  AlertDialogContext,
+  AlertDialogContextType,
+} from "@/components/ui/alert-dialog-provider";
 import { useContext } from "react";
 
-export const useAlertDialog = (): {
-  show: (
-    title: string,
-    action: () => void,
-    description?: string,
-    confirmText?: string
-  ) => void;
-} => {
+export const useAlertDialog = (): AlertDialogContextType => {
   const context = useContext(AlertDialogContext);
   if (context === undefined) {
     throw new Error(

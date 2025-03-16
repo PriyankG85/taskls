@@ -47,8 +47,8 @@ const Start = () => {
             img: "https://img.icons8.com/color/96/today.png",
           },
           {
-            name: "Study",
-            img: "https://img.icons8.com/fluency/96/reading.png",
+            name: "Learning",
+            img: "https://img.icons8.com/color/96/learning.png",
           },
         ])
       );
@@ -125,7 +125,7 @@ const Start = () => {
         </View>
 
         <Pressable
-          android_ripple={{ color: "#00285550", radius: 70 }}
+          android_ripple={{ color: "#00285550", foreground: true }}
           onPress={handleSetup}
           className="bg-dark-bg-300 text-base rounded-2xl overflow-hidden shadow shadow-black px-10 py-4"
         >

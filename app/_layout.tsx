@@ -8,14 +8,12 @@ import UserContext from "@/context/userdetails";
 import { StatusBar } from "expo-status-bar";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/styles/global.css";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
 
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
   const [loaded] = useFonts({
-    SpaceMonoBold: require("../assets/fonts/SpaceMono-Bold.ttf"),
     Metamorphous: require("../assets/fonts/Metamorphous.ttf"),
     Quattrocento: require("../assets/fonts/Quattrocento-Sans.ttf"),
   });

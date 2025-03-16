@@ -1,13 +1,30 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import { CheckCircle, Clock } from "lucide-react-native";
+import { View, Text } from "react-native";
+import { Clock } from "lucide-react-native";
 import { Image } from "expo-image";
 import { memo, Suspense, useContext } from "react";
 import TodosContext from "@/context/userTodos";
 import toggleTaskCompleted from "@/hooks/useMarkTaskCompleted";
-import { TaskProps } from "@/types/taskProps";
 import { useColorScheme } from "nativewind";
 import LoadingIndicator from "../global/LoadingIndicator";
+import CheckBox from "../global/CheckBox";
+import TextAvatar from "../global/TextAvatar";
 
+type Props = {
+  notificationId?: string;
+  taskId: string;
+  taskTitle: string;
+  taskDescription: string;
+  dueDate?:
+    | {
+        date: string;
+        time: string;
+      }
+    | undefined;
+  logo?: string;
+  completed?: boolean;
+  priority: "Low" | "Medium" | "High";
+  taskGroup?: string;
+};
 const TaskCard = memo(
   ({
     taskId,
@@ -17,34 +34,43 @@ const TaskCard = memo(
     logo,
     taskGroup,
     completed,
-  }: TaskProps) => {
+  }: Props) => {
     const dark = useColorScheme().colorScheme === "dark";
     const { todos, setTodos } = useContext(TodosContext);
 
     return (
       <Suspense fallback={<LoadingIndicator />}>
         <View
-          className={`justify-between flex-row p-5 rounded-xl ${
-            dark ? "bg-dark-primary-200/80" : "bg-white/80"
-          }`}
+          className={`justify-between flex-row p-5 rounded-lg dark:bg-background-100 bg-background-0`}
         >
           <View className="gap-2">
-            <View className="flex-row gap-x-2 items-center">
-              {logo && (
-                <Image
-                  source={{ uri: logo }}
-                  alt="group_logo"
-                  className="w-7 h-7 rounded-xl"
-                />
-              )}
-              <Text
-                className={`${
-                  dark ? "text-gray-300/70" : "text-gray-500/70"
-                } text-base`}
+            {taskGroup && (
+              <View
+                className="flex-row gap-x-2 items-center rounded-lg bg-background-muted"
+                style={{ paddingRight: 6 }}
               >
-                {taskGroup}
-              </Text>
-            </View>
+                {logo ? (
+                  <Image
+                    source={{ uri: logo }}
+                    alt="group_logo"
+                    className="w-7 h-7 rounded-xl"
+                  />
+                ) : (
+                  <TextAvatar
+                    text={taskGroup}
+                    size={25}
+                    textClassName="text-sm"
+                  />
+                )}
+                <Text
+                  className={`${
+                    dark ? "text-gray-300/70" : "text-gray-500/70"
+                  } text-sm`}
+                >
+                  {taskGroup}
+                </Text>
+              </View>
+            )}
             <Text
               numberOfLines={2}
               className={`${
@@ -71,19 +97,14 @@ const TaskCard = memo(
           </View>
 
           <View className="justify-between items-end">
-            <TouchableOpacity
-              className="p-2 rounded-full"
-              onPress={() =>
+            <CheckBox
+              checked={completed ?? false}
+              setChecked={(val) =>
                 setTodos(
-                  toggleTaskCompleted(todos, taskId, notificationId, completed)
+                  toggleTaskCompleted(todos, taskId, notificationId, !val)
                 )
               }
-            >
-              <CheckCircle
-                size={24}
-                color={completed ? "#4CAF60" : "#9ca3afb3"}
-              />
-            </TouchableOpacity>
+            />
 
             <View
               className={`px-2 py-[2px] rounded-full ${

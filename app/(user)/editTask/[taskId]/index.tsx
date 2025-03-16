@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   Platform,
   ToastAndroid,
+  Pressable,
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
@@ -74,6 +74,7 @@ const EditTask = () => {
 
   const [logo, setLogo] = useState<string | undefined>();
   const [checked, setChecked] = useState(!!taskToEdit.dueDate);
+  const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
@@ -144,6 +145,7 @@ const EditTask = () => {
           }
         : undefined,
       logo,
+      priority,
     };
     const editedTasks = todos.map((todo) =>
       todo.taskId === taskId ? newTaskDetails : todo
@@ -186,7 +188,6 @@ const EditTask = () => {
         </Text>
 
         <TaskDetailsPreview
-          dark={dark}
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
@@ -205,22 +206,27 @@ const EditTask = () => {
           setDueDate={setDueDate}
           taskTitleRef={taskTitleRef}
           taskTitleContainerRef={taskTitleContainerRef}
-          type="add"
+          type="add/edit"
           checked={checked}
           setChecked={setChecked}
+          priority={priority}
+          setPriority={setPriority}
         />
       </View>
 
-      <TouchableOpacity
-        activeOpacity={0.75}
-        className="py-4 mb-20 rounded-xl bg-dark-accent-100 disabled:opacity-70"
+      <Pressable
+        android_ripple={{
+          color: dark ? "#e0e0e010" : "#5c5c5c10",
+          foreground: true,
+        }}
+        className="py-4 mb-20 rounded-xl bg-dark-accent-100 disabled:opacity-70 overflow-hidden"
         onPress={handleSaveTask}
         disabled={!checkTaskModified()}
       >
         <Text className="text-dark-text-100 text-xl text-center font-extrabold">
           Save Task
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </ScrollView>
   );
 };

@@ -1,4 +1,4 @@
-import { View, TextInput } from "react-native";
+import { View, TextInput, Pressable } from "react-native";
 import React, {
   useCallback,
   useContext,
@@ -23,15 +23,19 @@ import { Image } from "expo-image";
 import { BlurView } from "expo-blur";
 import { Box } from "../ui/box";
 import { Input, InputField } from "../ui/input";
-import { Button, ButtonText } from "../ui/button";
 import Animated from "react-native-reanimated";
 import { handleAddTaskList, handleEditList } from "@/utils/handleTaskList";
 import { StyleSheet } from "react-native";
 import TextAvatar from "./TextAvatar";
+import { Text } from "react-native";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
-const AddTaskListProvider = ({ children }: { children: React.ReactNode }) => {
+const AddTaskListDialogProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const dark = useColorScheme().colorScheme === "dark";
   const inputRef = useRef<TextInput>(null);
   const { todos, setTodos, taskGroups, setTaskGroups } =
@@ -119,7 +123,11 @@ const AddTaskListProvider = ({ children }: { children: React.ReactNode }) => {
     <AddTaskListContext.Provider value={{ visible, show, showWithEditMode }}>
       {children}
 
-      <Actionsheet isOpen={visible} onClose={handleClose}>
+      <Actionsheet
+        isOpen={visible}
+        onClose={handleClose}
+        animationPreset="slide"
+      >
         <ActionsheetBackdrop />
 
         <ActionsheetContent className="gap-y-6 p-0 rounded-t-[2rem] shadow-lg shadow-background-0 overflow-hidden bg-background-0/60">
@@ -155,13 +163,15 @@ const AddTaskListProvider = ({ children }: { children: React.ReactNode }) => {
                   )}
                 </Box>
 
-                <Button
+                <Pressable
+                  android_ripple={{ color: "#1b1b1b20", foreground: true }}
                   onPress={() => pickImage().then((uri) => setLogo(uri))}
-                  className="justify-center items-center bg-primary-500 rounded-lg"
-                  size="xl"
+                  className="justify-center items-center dark:bg-primary-500 bg-secondary-950 rounded-lg px-4 py-2 overflow-hidden"
                 >
-                  <ButtonText size="md">Change Logo</ButtonText>
-                </Button>
+                  <Text className="text-typography-0 text-base">
+                    Change Logo
+                  </Text>
+                </Pressable>
               </View>
 
               <Input
@@ -172,12 +182,11 @@ const AddTaskListProvider = ({ children }: { children: React.ReactNode }) => {
                 className="border-secondary-900 focus:border focus:border-primary focus:shadow-outline"
               >
                 <InputField
-                  value={input}
                   onChangeText={(e) => {
                     setInvalid(false);
                     setInput(e);
                   }}
-                  maxLength={20}
+                  maxLength={24}
                   placeholder="Group Name"
                   placeholderTextColor={dark ? "#ffffff70" : "#00000070"}
                   className="px-4 py-3 placeholder:text-typography-500"
@@ -185,18 +194,18 @@ const AddTaskListProvider = ({ children }: { children: React.ReactNode }) => {
               </Input>
             </View>
 
-            <Button
+            <Pressable
+              android_ripple={{ color: "#ffffff30", foreground: true }}
               onPress={editMode ? handleUpdate : handleAdd}
-              size="lg"
-              className={`self-end dark:bg-info-700 bg-primary-950 rounded-xl min-w-28 ${
+              className={`self-end items-center justify-center dark:bg-info-600 bg-primary-950 rounded-xl min-w-28 py-2 overflow-hidden ${
                 actionDisabled ? "opacity-60" : ""
               }`}
               disabled={actionDisabled}
             >
-              <ButtonText className="font-spaceMonoBold text-typography-0">
+              <Text className="text-typography-0 text-base">
                 {editMode ? "Update" : "Add"}
-              </ButtonText>
-            </Button>
+              </Text>
+            </Pressable>
           </Box>
         </ActionsheetContent>
       </Actionsheet>
@@ -204,4 +213,4 @@ const AddTaskListProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default AddTaskListProvider;
+export default AddTaskListDialogProvider;

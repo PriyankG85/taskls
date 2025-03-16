@@ -27,7 +27,7 @@ const TaskGroupCard = memo(({ title, tasks, progress, img }: Props) => {
       >
         <Box className="flex-row justify-between w-full">
           <View className="flex-row items-center gap-4">
-            <Box className="rounded-3xl w-16 h-16 p-2 bg-dark-accent-100 justify-center items-center">
+            <Box className="rounded-3xl w-16 h-16 p-2 bg-secondary-100/70 justify-center items-center">
               {img && img !== "" ? (
                 <Image
                   source={{ uri: img }}

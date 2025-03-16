@@ -8,8 +8,6 @@ import {
 import { OverlayProvider } from "@gluestack-ui/overlay";
 import { useColorScheme as useColorSchemeNW } from "nativewind";
 import AlertDialogProvider from "../alert-dialog-provider";
-import { InputDialogProvider } from "../input-dialog";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function GluestackUIProvider({
   mode = "light",
@@ -52,9 +50,7 @@ export function GluestackUIProvider({
       ]}
     >
       <OverlayProvider>
-        <AlertDialogProvider>
-          <InputDialogProvider>{props.children}</InputDialogProvider>
-        </AlertDialogProvider>
+        <AlertDialogProvider>{props.children}</AlertDialogProvider>
       </OverlayProvider>
     </View>
   );

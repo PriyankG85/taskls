@@ -64,7 +64,7 @@ const Settings = () => {
             <TextInput
               value={input!}
               onChangeText={(text) => setInput(text)}
-              className={`text-2xl font-spaceMonoBold ${
+              className={`text-2xl font-roboto font-bold ${
                 dark
                   ? `${
                       isNameEditable
@@ -123,35 +123,18 @@ const Settings = () => {
                 }}
                 dropdownIconColor={dark ? "white" : "black"}
                 selectionColor={dark ? "#3A506B" : "#c7ddfd90"}
-                itemStyle={{
-                  color: dark ? "white" : "black",
-                }}
                 mode="dropdown"
               >
-                <Picker.Item
-                  style={{
-                    backgroundColor: dark ? "#333333" : "#fdfdfd",
-                    color: dark ? "white" : "black",
-                  }}
-                  label="Dark"
-                  value="dark"
-                />
-                <Picker.Item
-                  style={{
-                    backgroundColor: dark ? "#333333" : "#fdfdfd",
-                    color: dark ? "white" : "black",
-                  }}
-                  label="Light"
-                  value="light"
-                />
-                <Picker.Item
-                  style={{
-                    backgroundColor: dark ? "#333333" : "#fdfdfd",
-                    color: dark ? "white" : "black",
-                  }}
-                  label="System"
-                  value="system"
-                />
+                {["Dark", "Light", "System"].map((item) => (
+                  <Picker.Item
+                    style={{
+                      backgroundColor: dark ? "#333333" : "#fdfdfd",
+                      color: dark ? "white" : "black",
+                    }}
+                    label={item}
+                    value={item.toLowerCase()}
+                  />
+                ))}
               </Picker>
             </SettingsOptionCard>
 
