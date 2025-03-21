@@ -12,7 +12,13 @@ import FilterTasksDialog, {
 } from "@/components/global/FilterTasksDialog";
 import { Check, Flag, List, SlidersHorizontal } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import Animated, {
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import AnimatedHorizontalList from "@/components/global/AnimatedHorizontalList";
 
 const PendingTasks = () => {
   const dark = useColorScheme().colorScheme === "dark";
@@ -21,7 +27,10 @@ const PendingTasks = () => {
     taskGroups: TaskGroup[];
   }>(TodosContext);
 
-  const pendingTodos = todos.filter((todo) => !todo.completed);
+  const pendingTodos = React.useMemo(
+    () => todos.filter((todo) => !todo.completed),
+    [todos]
+  );
   const [todosToDisplay, setTodosToDisplay] = React.useState(pendingTodos);
   const [isFilterVisible, setIsFilterVisible] = React.useState(false);
   const [activeFilters, setActiveFilters] = React.useState<FilterSelections>(
@@ -39,8 +48,9 @@ const PendingTasks = () => {
   };
 
   React.useEffect(() => {
-    setTodosToDisplay(pendingTodos);
-  }, [todos]);
+    if (filtersCount() === 0) setTodosToDisplay(pendingTodos);
+    else applyFilters(activeFilters);
+  }, [pendingTodos]);
 
   // Define filter categories
   const filterCategories: FilterCategory[] = [
@@ -103,7 +113,7 @@ const PendingTasks = () => {
   };
 
   return (
-    <Animated.View className="flex-1 gap-5 pt-10">
+    <View className="flex-1 gap-5 pt-10">
       <View className="flex-row px-5 gap-7 items-end justify-between">
         <View className="gap-1">
           <Text className="font-Metamorphous text-3xl dark:text-dark-text-100 text-light-text-100">
@@ -131,10 +141,9 @@ const PendingTasks = () => {
       </View>
 
       {filtersCount() > 0 && (
-        <Animated.FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerClassName="px-5 gap-2"
+        <AnimatedHorizontalList
+          contentContainerClassName="items-center px-5 gap-2 grow"
+          itemLayoutAnimation={LinearTransition}
           className="max-h-[36px]"
           data={Object.keys(activeFilters).flatMap((key) => {
             const value = activeFilters[key];
@@ -191,38 +200,18 @@ const PendingTasks = () => {
       )}
 
       <Animated.FlatList
+        maxToRenderPerBatch={10}
         data={todosToDisplay.slice().reverse()}
         renderItem={({ item: todo }) => (
-          <TaskControlsMenuWrapper
-            key={todo.taskId}
+          <TaskCard
+            tags={todo.tags}
             taskId={todo.taskId}
-            onPress={() =>
-              router.push({
-                pathname: "/taskPreview",
-                params: {
-                  priority: todo.priority,
-                  taskGroup: todo.taskGroup,
-                  taskTitle: todo.taskTitle,
-                  taskId: todo.taskId,
-                  notificationId: todo.notificationId,
-                  taskDescription: todo.taskDescription,
-                  dueDate: JSON.stringify(todo.dueDate),
-                  logo: todo.logo,
-                },
-              })
-            }
-          >
-            <TaskCard
-              priority={todo.priority}
-              taskId={todo.taskId}
-              notificationId={todo.notificationId}
-              taskTitle={todo.taskTitle}
-              dueDate={todo.dueDate}
-              taskDescription={todo.taskDescription}
-              taskGroup={todo.taskGroup}
-              completed={todo.completed}
-            />
-          </TaskControlsMenuWrapper>
+            notificationId={todo.notificationId}
+            taskTitle={todo.taskTitle}
+            dueDate={todo.dueDate}
+            taskGroup={todo.taskGroup}
+            completed={todo.completed}
+          />
         )}
         ListEmptyComponent={
           <Text className="dark:text-dark-text-200/70 text-light-text-200/70 text-lg text-center mt-4 font-Quattrocento">
@@ -243,7 +232,7 @@ const PendingTasks = () => {
         categories={filterCategories}
         initialSelections={activeFilters}
       />
-    </Animated.View>
+    </View>
   );
 };
 

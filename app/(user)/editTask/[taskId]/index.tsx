@@ -11,7 +11,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import TodosContext from "@/context/userTodos";
-import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
+import TaskDetails from "@/components/task/TaskDetails";
 import * as Notifications from "expo-notifications";
 import { useColorScheme } from "nativewind";
 import { TaskProps } from "@/types/taskProps";
@@ -75,6 +75,7 @@ const EditTask = () => {
   const [logo, setLogo] = useState<string | undefined>();
   const [checked, setChecked] = useState(!!taskToEdit.dueDate);
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
+  const [tags, setTags] = useState<string[]>(taskToEdit.tags ?? []);
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
@@ -97,10 +98,11 @@ const EditTask = () => {
   }, [taskGroup]);
 
   const handleSaveTask = async () => {
-    if (taskTitle === "") {
+    let invalidTitle = taskTitle.trim().length === 0;
+    if (invalidTitle) {
       taskTitleContainerRef.current?.setNativeProps({
         style: {
-          borderColor: "red",
+          borderColor: "#FF231F7C",
           borderWidth: 1,
         },
       });
@@ -136,8 +138,8 @@ const EditTask = () => {
       taskId: new Date().getTime().toString(),
       notificationId: identifier === null ? undefined : identifier,
       taskGroup,
-      taskTitle,
-      taskDescription,
+      taskTitle: taskTitle.trim(),
+      taskDescription: taskDescription.trim(),
       dueDate: checked
         ? {
             date: dueDate.date.toISOString(),
@@ -146,6 +148,7 @@ const EditTask = () => {
         : undefined,
       logo,
       priority,
+      tags,
     };
     const editedTasks = todos.map((todo) =>
       todo.taskId === taskId ? newTaskDetails : todo
@@ -187,7 +190,7 @@ const EditTask = () => {
           Edit Task
         </Text>
 
-        <TaskDetailsPreview
+        <TaskDetails
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
@@ -211,6 +214,8 @@ const EditTask = () => {
           setChecked={setChecked}
           priority={priority}
           setPriority={setPriority}
+          tags={tags}
+          setTags={setTags}
         />
       </View>
 

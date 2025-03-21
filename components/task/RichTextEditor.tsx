@@ -22,7 +22,7 @@ interface Props {
 const RichTextEditor: React.FC<Props> = ({
   value = "",
   onChange,
-  height = 200,
+  height = 250,
   placeholder = "Enter task description...",
   editable = true,
 }) => {
@@ -63,11 +63,24 @@ const RichTextEditor: React.FC<Props> = ({
           style={styles.editor}
           containerStyle={styles.editorContainer}
           useContainer={true}
+          styleWithCSS={true}
           editorStyle={{
             contentCSSText: `
           font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             font-size: 16px;
             line-height: 1.5;
+            code {
+              background-color: #1b1b1b;
+              color: #f8f8f2;
+              padding: 10px;
+              border-radius: 4px;
+            }
+            pre {
+              background-color: #1b1b1b;
+              color: #f8f8f2;
+              padding: 10px;
+              border-radius: 4px;
+            }
             `,
             color: dark ? "#fff" : "#000",
             backgroundColor: dark ? "#29293e" : "#b4bfcc",
@@ -96,7 +109,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   editor: {
-    flex: 1,
     paddingHorizontal: 7,
   },
   toolbar: {

@@ -18,21 +18,12 @@ const PendingTaskCard = memo(
     notificationId,
     taskGroup,
     taskTitle,
-    taskDescription,
     logo,
-    dueDate: unformattedDueDate,
+    dueDate,
     completed,
-    priority,
-  }: TaskProps) => {
+  }: Omit<TaskProps, "taskDescription" | "priority" | "tags">) => {
     const { todos, setTodos } = useContext(TodosContext);
     const dark = useColorScheme().colorScheme === "dark";
-
-    const dueDate = unformattedDueDate
-      ? {
-          date: unformattedDueDate.date,
-          time: unformattedDueDate.time,
-        }
-      : undefined;
 
     return (
       <Suspense fallback={<LoadingIndicator />}>
@@ -45,16 +36,7 @@ const PendingTaskCard = memo(
           onPress={() =>
             router.push({
               pathname: "/taskPreview",
-              params: {
-                priority,
-                taskGroup,
-                taskTitle,
-                taskId,
-                notificationId,
-                taskDescription,
-                dueDate: JSON.stringify(dueDate),
-                logo,
-              },
+              params: { taskId },
             })
           }
           className="rounded-2xl shadow-md overflow-hidden"
@@ -103,8 +85,8 @@ const PendingTaskCard = memo(
             </View>
 
             <Text
-              className="text-lg font-semibold leading-5 dark:text-dark-text-200 text-light-text-100"
-              numberOfLines={3}
+              className="text-base font-semibold dark:text-dark-text-200 text-light-text-100"
+              numberOfLines={2}
             >
               {taskTitle}
             </Text>

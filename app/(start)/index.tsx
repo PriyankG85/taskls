@@ -7,51 +7,58 @@ import UserContext from "@/context/userdetails";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { MotiView, useDynamicAnimation } from "moti";
 import { cssInterop } from "nativewind";
 import React, { useContext, useState } from "react";
+import { useColorScheme } from "react-native";
 import { Pressable, Text, View } from "react-native";
+import Animated, {
+  withTiming,
+  withSequence,
+  useSharedValue,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 
 cssInterop(Image, { className: "style" });
 
 const Start = () => {
+  const dark = useColorScheme() === "dark";
   const { setName: setNameInContext } = useContext(UserContext);
   const [name, setName] = useState("");
   const [warning, setWarning] = useState(false);
-  const animationState = useDynamicAnimation();
+  const translateX = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { scale: withTiming(warning ? 0.95 : 1, { duration: 300 }) },
+      ],
+    };
+  });
 
   const handleSetup = () => {
     if (name === "") {
       setWarning(true);
-      animationState.animateTo({
-        translateX: -20,
-      });
-      setTimeout(() => {
-        animationState.animateTo({
-          translateX: 20,
-        });
-        setTimeout(() => {
-          animationState.animateTo({
-            translateX: 0,
-          });
-        }, 75);
-      }, 75);
+      // shake animation
+      translateX.value = withSequence(
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 })
+      );
     } else {
       setNameInContext(name);
       setDataToLocalStorage("name", name);
-      setDataToLocalStorage(
-        "taskGroups",
-        JSON.stringify([
-          {
-            name: "Daily Work",
-            img: "https://img.icons8.com/color/96/today.png",
-          },
-          {
-            name: "Learning",
-            img: "https://img.icons8.com/color/96/learning.png",
-          },
-        ])
-      );
+      const defaultTaskGroups = [
+        {
+          name: "Daily Work",
+          img: "https://img.icons8.com/color/96/today.png",
+        },
+        {
+          name: "Learning",
+          img: "https://img.icons8.com/color/96/learning.png",
+        },
+      ];
+      setDataToLocalStorage("taskGroups", JSON.stringify(defaultTaskGroups));
       router.push("/(user)/(tabs)");
     }
   };
@@ -59,20 +66,15 @@ const Start = () => {
   return (
     <GlassmorphicBackground
       className="flex-1"
-      gradientColors={["#002855", "#4c669f"]}
-      blurIntensity={70}
+      gradientColors={
+        dark
+          ? ["#1A1A2E", "#16213E", "#0F3460"]
+          : ["#7A8CA0", "#5A7A9A", "#3D5A80"]
+      }
     >
       <Box className="flex-1 items-center pt-[13vh] gap-14 font-Quattrocento">
-        <MotiView
-          from={{
-            scale: 0.75,
-          }}
-          animate={{
-            scale: 1,
-          }}
-          transition={{
-            type: "timing",
-          }}
+        <View
+          style={animatedStyle}
           className="w-full h-[40%] items-center justify-center"
         >
           <Image
@@ -81,7 +83,7 @@ const Start = () => {
             contentFit="contain"
             className="size-full"
           />
-        </MotiView>
+        </View>
 
         <View className="items-center">
           <Text className="text-3xl text-typography-white font-Metamorphous leading-[42px]">
@@ -92,42 +94,43 @@ const Start = () => {
           </Text>
         </View>
 
-        <View className="w-[70%] gap-2">
-          <MotiView
-            state={animationState}
-            transition={{
-              type: "spring",
-            }}
-          >
+        <View className="w-[70%] gap-4">
+          <Animated.View style={animatedStyle}>
             <Input
-              className={`h-[55px] bg-[##DCDBDB] rounded-2xl shadow shadow-black p-2 ${
-                warning && "border-error-200 border-2 shadow-error-500"
+              className={`h-[55px] dark:bg-primary-400/95 bg-secondary-400/95 rounded-2xl elevation p-2 border-0 ${
+                warning && "border-error-500 border-2 shadow-error-500"
               }`}
             >
               <InputField
                 value={name}
                 onChangeText={(text) => {
-                  setWarning(false);
+                  warning && setWarning(false);
                   setName(text);
                 }}
+                onSubmitEditing={handleSetup}
                 autoCapitalize="words"
                 textAlign="center"
                 placeholder="Your Name"
                 className="text-lg text-center font-roboto text-typography-black"
               />
             </Input>
-          </MotiView>
+          </Animated.View>
           {warning && (
-            <Text className="text-error-50 ml-2 text-sm font-Metamorphous">
+            <Text
+              className={`dark:text-error-500 text-error-300 ml-2 text-sm font-Metamorphous`}
+            >
               Please enter your name first
             </Text>
           )}
         </View>
 
         <Pressable
-          android_ripple={{ color: "#00285550", foreground: true }}
+          android_ripple={{
+            color: dark ? "#e0e0e010" : "#5c5c5c10",
+            foreground: true,
+          }}
           onPress={handleSetup}
-          className="bg-dark-bg-300 text-base rounded-2xl overflow-hidden shadow shadow-black px-10 py-4"
+          className="bg-dark-bg-200 text-base rounded-2xl overflow-hidden shadow shadow-black px-10 py-4"
         >
           <Text className="font-Quattrocento text-base text-white">
             Continue

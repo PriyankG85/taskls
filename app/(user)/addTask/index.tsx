@@ -11,13 +11,14 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import TodosContext from "@/context/userTodos";
-import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
+import TaskDetails from "@/components/task/TaskDetails";
 import * as Notifications from "expo-notifications";
 import { useColorScheme } from "nativewind";
 import {
   registerForPushNotificationsAsync,
   scheduleNotification,
 } from "@/utils/handlePushNotifications";
+import { TaskProps } from "@/types/taskProps";
 
 interface TaskGroupProps {
   name: string;
@@ -34,7 +35,13 @@ Notifications.setNotificationHandler({
 
 const AddTask = () => {
   const dark = useColorScheme().colorScheme === "dark";
-  const { todos, setTodos } = useContext(TodosContext);
+  const {
+    todos,
+    setTodos,
+  }: {
+    todos: TaskProps[];
+    setTodos: React.Dispatch<React.SetStateAction<TaskProps[]>>;
+  } = useContext(TodosContext);
   const { taskGroups } = useContext(TodosContext);
 
   const { taskGroup: groupNameInParams }: { taskGroup: string } =
@@ -55,7 +62,7 @@ const AddTask = () => {
   const [logo, setLogo] = useState<string | undefined>();
   const [checked, setChecked] = useState(true);
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
-  // const [attachments, setAttachments] = useState<DocumentPickerResponse[]>([])
+  const [tags, setTags] = useState<string[]>([]);
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
@@ -78,10 +85,11 @@ const AddTask = () => {
   }, [taskGroup]);
 
   const handleAddTask = async () => {
-    if (taskTitle === "") {
+    let invalidTitle = taskTitle.trim().length === 0;
+    if (invalidTitle) {
       taskTitleContainerRef.current?.setNativeProps({
         style: {
-          borderColor: "red",
+          borderColor: "#FF231F7C",
           borderWidth: 1,
         },
       });
@@ -97,52 +105,44 @@ const AddTask = () => {
       return;
     }
 
-    console.warn("data: ", {
-      taskGroup,
-      taskTitle,
-      taskDescription,
-      dueDate,
-      logo,
-      priority,
-    });
-
     let identifier = null;
 
     // Scheduling Notifications
     // FIXME: Notifications not working..
-    // if (checked) {
-    //   const notificationId = await scheduleNotification(
-    //     taskTitle,
-    //     taskDescription,
-    //     dueDate.date,
-    //     dueDate.time
-    //   );
-    //   identifier = notificationId;
-    // }
+    if (checked) {
+      const notificationId = await scheduleNotification(
+        taskTitle,
+        taskDescription,
+        dueDate.date,
+        dueDate.time
+      );
+      identifier = notificationId;
+    }
 
-    // // Saving Task to Local Storage
-    // const taskDetails = {
-    //   taskId: new Date().getTime().toString(),
-    //   notificationId: identifier === null ? undefined : identifier,
-    //   taskGroup,
-    //   taskTitle,
-    //   taskDescription,
-    //   dueDate: checked
-    //     ? {
-    //         date: dueDate.date.toISOString(),
-    //         time: dueDate.time,
-    //       }
-    //     : undefined,
-    //   logo,
-    //   priority,
-    // };
-    // const tasks = [...todos, taskDetails];
-    // const dataString = JSON.stringify(tasks);
+    // Saving Task to Local Storage
+    const taskDetails = {
+      taskId: new Date().getTime().toString(),
+      notificationId: identifier === null ? undefined : identifier,
+      taskGroup,
+      taskTitle: taskTitle.trim(),
+      taskDescription: taskDescription.trim(),
+      dueDate: checked
+        ? {
+            date: dueDate.date.toISOString(),
+            time: dueDate.time,
+          }
+        : undefined,
+      logo,
+      priority,
+      tags,
+    };
+    const tasks = [...todos, taskDetails];
+    const dataString = JSON.stringify(tasks);
 
-    // setDataToLocalStorage("todos", dataString);
-    // setTodos(tasks);
+    setDataToLocalStorage("todos", dataString);
+    setTodos(tasks);
 
-    // navigation.goBack();
+    navigation.goBack();
   };
 
   return (
@@ -156,7 +156,7 @@ const AddTask = () => {
           New Task
         </Text>
 
-        <TaskDetailsPreview
+        <TaskDetails
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
@@ -180,6 +180,8 @@ const AddTask = () => {
           setChecked={setChecked}
           priority={priority}
           setPriority={setPriority}
+          tags={tags}
+          setTags={setTags}
         />
       </View>
 

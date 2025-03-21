@@ -1,3 +1,5 @@
+// TODO: Add createdAt & modifiedAt fields for better tracking
+
 export type TaskProps = {
   notificationId?: string;
   taskId: string;
@@ -8,4 +10,5 @@ export type TaskProps = {
   logo?: string;
   completed?: boolean;
   priority: "Low" | "Medium" | "High";
+  tags: string[];
 };

@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Pressable,
   Animated as NativeAnimated,
+  ScrollView,
 } from "react-native";
 import React, { Suspense, useContext } from "react";
 import TodosContext from "@/context/userTodos";
@@ -36,6 +37,7 @@ const Completed = () => {
   const [selectedList, setSelectedList] = React.useState("All");
   const scrollY: NativeAnimated.Value = useContext(ScrollYContext);
 
+  // TODO: Sort the completed todos according to the modifiedAt field
   const completedTodos = todos
     .filter((todo) => todo.completed === true)
     .reverse();
@@ -70,12 +72,11 @@ const Completed = () => {
           </TouchableOpacity>
         </View>
 
-        <Animated.ScrollView
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-2 items-center"
           className="max-h-[36px]"
-          layout={LinearTransition}
         >
           {["All", ...taskGroups.map((group) => group.name)].map((item) => (
             <Pressable
@@ -98,9 +99,10 @@ const Completed = () => {
               </Text>
             </Pressable>
           ))}
-        </Animated.ScrollView>
+        </ScrollView>
 
         <Animated.FlatList
+          maxToRenderPerBatch={10}
           className="flex-1"
           onScroll={NativeAnimated.event(
             [
@@ -119,37 +121,16 @@ const Completed = () => {
           contentContainerClassName="gap-2 pb-20"
           itemLayoutAnimation={LinearTransition}
           renderItem={({ item: todo }) => (
-            <TaskControlsMenuWrapper
-              key={todo.taskId}
+            <TaskCard
+              tags={todo.tags}
               taskId={todo.taskId}
-              onPress={() =>
-                router.push({
-                  pathname: "/taskPreview",
-                  params: {
-                    priority: todo.priority,
-                    taskGroup: todo.taskGroup,
-                    taskTitle: todo.taskTitle,
-                    taskId: todo.taskId,
-                    notificationId: todo.notificationId,
-                    taskDescription: todo.taskDescription,
-                    dueDate: JSON.stringify(todo.dueDate),
-                    logo: todo.logo,
-                  },
-                })
-              }
-            >
-              <TaskCard
-                priority={todo.priority}
-                taskId={todo.taskId}
-                notificationId={todo.notificationId}
-                taskTitle={todo.taskTitle}
-                taskDescription={todo.taskDescription}
-                dueDate={todo.dueDate}
-                logo={todo.logo}
-                taskGroup={todo.taskGroup}
-                completed={todo.completed}
-              />
-            </TaskControlsMenuWrapper>
+              notificationId={todo.notificationId}
+              taskTitle={todo.taskTitle}
+              dueDate={todo.dueDate}
+              logo={todo.logo}
+              taskGroup={todo.taskGroup}
+              completed={todo.completed}
+            />
           )}
           ListEmptyComponent={
             <Text className={`text-lg text-center text-typography-500`}>

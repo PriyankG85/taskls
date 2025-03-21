@@ -7,18 +7,19 @@ const TaskCard = memo(
     taskId,
     notificationId,
     taskTitle,
-    taskDescription,
     dueDate,
     completed,
-    priority,
-  }: TaskProps) => {
+    tags,
+  }: Omit<
+    TaskProps,
+    "taskDescription" | "priority" | "taskGroup" | "logo"
+  >) => {
     return (
       <DefaultTaskCard
         taskId={taskId}
-        priority={priority}
+        tags={tags}
         notificationId={notificationId}
         taskTitle={taskTitle}
-        taskDescription={taskDescription}
         dueDate={dueDate}
         completed={completed}
       />

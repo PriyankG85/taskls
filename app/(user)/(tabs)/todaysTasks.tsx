@@ -3,6 +3,7 @@ import {
   Text,
   Pressable,
   Animated as NativeAnimated,
+  ScrollView,
 } from "react-native";
 import React, { Suspense, useContext, useState } from "react";
 import TodaysTaskCard from "@/components/tabs/TaskCard";
@@ -28,13 +29,17 @@ const TodaysTasks = () => {
     useContext(TodosContext);
   const scrollY: NativeAnimated.Value = useContext(ScrollYContext);
 
-  const todaysTodos = todos.filter((todo) => {
-    const todayDate = today.toISOString().split("T")[0];
-    const taskDate = todo.dueDate?.date
-      ? todo.dueDate.date.split("T")[0]
-      : undefined;
-    return taskDate === todayDate;
-  });
+  const todaysTodos = React.useMemo(
+    () =>
+      todos.filter((todo) => {
+        const todayDate = today.toISOString().split("T")[0];
+        const taskDate = todo.dueDate?.date
+          ? todo.dueDate.date.split("T")[0]
+          : undefined;
+        return taskDate === todayDate;
+      }),
+    [todos]
+  );
   const [todosToDisplay, setTodosToDisplay] = useState(todaysTodos);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterSelections>({});
@@ -50,9 +55,20 @@ const TodaysTasks = () => {
     return count;
   };
 
+  const filtersCount = () => {
+    let count = 0;
+    Object.keys(activeFilters).map((key) => {
+      let value = activeFilters[key];
+      if (Array.isArray(value)) count += value.length;
+      else count += 1;
+    });
+    return count;
+  };
+
   React.useEffect(() => {
-    setTodosToDisplay(todaysTodos);
-  }, [todos]);
+    if (filtersCount() === 0) setTodosToDisplay(todaysTodos);
+    else applyFilters(activeFilters);
+  }, [todaysTodos]);
 
   // Define filter categories
   const filterCategories: FilterCategory[] = [
@@ -143,12 +159,11 @@ const TodaysTasks = () => {
           </Text>
         </View>
 
-        <Animated.ScrollView
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-[10px] pl-5 items-center"
           className="max-h-[36px]"
-          layout={LinearTransition}
         >
           {filterCategories[0].options.map((item) => {
             let active =
@@ -204,9 +219,10 @@ const TodaysTasks = () => {
               </View>
             )}
           </View>
-        </Animated.ScrollView>
+        </ScrollView>
 
         <Animated.FlatList
+          maxToRenderPerBatch={10}
           onScroll={NativeAnimated.event(
             [
               {
@@ -229,25 +245,15 @@ const TodaysTasks = () => {
               onPress={() =>
                 router.push({
                   pathname: "/taskPreview",
-                  params: {
-                    priority: todo.priority,
-                    taskGroup: todo.taskGroup,
-                    taskTitle: todo.taskTitle,
-                    taskId: todo.taskId,
-                    notificationId: todo.notificationId,
-                    taskDescription: todo.taskDescription,
-                    dueDate: JSON.stringify(todo.dueDate),
-                    logo: todo.logo,
-                  },
+                  params: { taskId: todo.taskId },
                 })
               }
             >
               <TodaysTaskCard
-                priority={todo.priority}
+                tags={todo.tags}
                 taskId={todo.taskId}
                 notificationId={todo.notificationId}
                 taskTitle={todo.taskTitle}
-                taskDescription={todo.taskDescription}
                 dueDate={todo.dueDate}
                 logo={todo.logo}
                 taskGroup={todo.taskGroup}

@@ -9,7 +9,6 @@ export const handleAddTaskList = async ({
   taskGroups,
   setTaskGroups,
   onInvalidInput,
-  onNoInput,
 }: {
   input: string;
   logo?: string;
@@ -22,12 +21,7 @@ export const handleAddTaskList = async ({
   taskGroups.forEach((group: any) => {
     if (group.name === input.trim()) nameExists = true;
   });
-
-  if (input === "") {
-    onInvalidInput?.();
-    onNoInput?.();
-    return;
-  } else if (nameExists) {
+  if (nameExists) {
     onInvalidInput?.();
     ToastAndroid.show("A List exists with this name.", 5);
     return;

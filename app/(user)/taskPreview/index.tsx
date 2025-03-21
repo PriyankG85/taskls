@@ -1,8 +1,7 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import React, { useContext } from "react";
-import TaskDetailsPreview from "@/components/taskPreview/TaskDetailsPreview";
+import TaskDetailsPreview from "@/components/task/TaskDetails";
 import { router, useLocalSearchParams } from "expo-router";
-import { Trash2 } from "lucide-react-native";
 import { decodeImgUri } from "@/utils/decodeImgUri";
 import TodosContext from "@/context/userTodos";
 import { useColorScheme } from "nativewind";
@@ -11,17 +10,34 @@ import { handleDeleteTask } from "@/utils/handleTask";
 import toggleTaskCompleted from "@/hooks/useMarkTaskCompleted";
 import { TaskProps } from "@/types/taskProps";
 import CheckBox from "@/components/global/CheckBox";
-import Animated from "react-native-reanimated";
+import { Picker } from "@react-native-picker/picker";
+import {
+  Menu,
+  MenuItem,
+  MenuItemLabel,
+  MenuSeparator,
+} from "@/components/ui/menu";
+import { EllipsisVertical, Pencil, Trash2 } from "lucide-react-native";
 
 const TaskPreview = () => {
   const dark = useColorScheme().colorScheme === "dark";
-  const params = useLocalSearchParams();
+  const { taskId }: { taskId: string } = useLocalSearchParams();
   const alertDialog = useAlertDialog();
   const { todos, setTodos } = useContext(TodosContext);
 
-  const unformattedDueDate = params.dueDate
-    ? JSON.parse(decodeURIComponent(params.dueDate as string))
-    : undefined;
+  const task = todos.find((todo: TaskProps) => todo.taskId === taskId);
+  const {
+    taskTitle,
+    priority,
+    tags,
+    taskDescription,
+    taskGroup,
+    completed,
+    dueDate: unformattedDueDate,
+    logo,
+    notificationId,
+  }: TaskProps = task;
+
   const dueDate = unformattedDueDate
     ? {
         date: new Date(unformattedDueDate.date).toLocaleDateString("en-US", {
@@ -33,26 +49,13 @@ const TaskPreview = () => {
       }
     : undefined;
 
-  const taskId = params.taskId as string;
-  const notificationId = params.notificationId as string;
-  const priority = params.priority as "Low" | "Medium" | "High";
-  const taskGroup = decodeURIComponent(params.taskGroup as string);
-  const taskTitle = decodeURIComponent(params.taskTitle as string);
-  const taskDescription = decodeURIComponent(params.taskDescription as string);
-  const decodedLogo = params.logo
-    ? decodeImgUri(params.logo as string)
-    : undefined;
-
   const handleRemoveTask = async () => {
     await handleDeleteTask(todos, setTodos, taskId, notificationId);
     router.back();
   };
-  const completed = todos.find(
-    (todo: TaskProps) => todo.taskId === taskId
-  )?.completed;
 
   return (
-    <Animated.ScrollView
+    <ScrollView
       className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100"
       contentContainerStyle={{ gap: 20 }}
     >
@@ -64,7 +67,7 @@ const TaskPreview = () => {
         >
           Task Preview
         </Text>
-        <View className="flex-row items-center justify-center gap-2">
+        <View className="flex-row items-center justify-center gap-3">
           <CheckBox
             checked={completed ?? false}
             setChecked={(val) =>
@@ -74,28 +77,81 @@ const TaskPreview = () => {
             }
             size={22}
           />
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() =>
-              alertDialog.show("Delete Task?", handleRemoveTask, "", "Yes")
-            }
-            className="p-1"
+          <Menu
+            placement="bottom left"
+            trigger={(props) => (
+              <Pressable
+                andriod_ripple={{
+                  color: dark ? "#e0e0e010" : "#5c5c5c10",
+                  radius: 5,
+                }}
+                {...props}
+              >
+                <EllipsisVertical color={dark ? "#fbfbfb" : "#1b1b1b"} />
+              </Pressable>
+            )}
+            offset={7}
+            className="bg-background-muted shadow rounded-xl right-5"
           >
-            <Trash2 size={22} color="#FF5733" className="mr-3" />
-          </TouchableOpacity>
+            <MenuItem
+              key="edit"
+              textValue="Edit"
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+              }}
+              onPress={() =>
+                router.push({
+                  pathname: "/editTask/[taskId]",
+                  params: { taskId: taskId },
+                })
+              }
+              className="gap-2"
+            >
+              <Pencil size={16} color={"#3B82F6"} />{" "}
+              <MenuItemLabel
+                size="lg"
+                className="dark:text-white text-black font-roboto"
+              >
+                Edit
+              </MenuItemLabel>
+            </MenuItem>
+
+            <MenuSeparator />
+
+            <MenuItem
+              key="delete"
+              textValue="Delete"
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+              }}
+              onPress={() =>
+                alertDialog.show("Delete Task?", handleRemoveTask, "", "Yes")
+              }
+              className="gap-2"
+            >
+              <Trash2 size={16} color={"#B91C1C"} />
+              <MenuItemLabel
+                size="lg"
+                className="dark:text-white text-black font-roboto"
+              >
+                Delete
+              </MenuItemLabel>
+            </MenuItem>
+          </Menu>
         </View>
       </View>
 
       <TaskDetailsPreview
+        tags={tags}
         priority={priority}
         taskGroup={taskGroup}
         taskTitle={taskTitle}
         taskDescription={taskDescription}
         dueDate={dueDate}
-        logo={decodedLogo}
+        logo={logo}
         type="preview"
       />
-    </Animated.ScrollView>
+    </ScrollView>
   );
 };
 

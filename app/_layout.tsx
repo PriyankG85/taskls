@@ -9,6 +9,8 @@ import { StatusBar } from "expo-status-bar";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/styles/global.css";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
+import "react-native-reanimated";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -65,12 +67,14 @@ const RootLayout = () => {
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <UserContext.Provider value={{ name, setName, theme, setTheme }}>
-        <GluestackUIProvider mode={theme}>
-          <StatusBar style="light" />
-          <Slot screenOptions={{ headerShown: false }} />
-        </GluestackUIProvider>
-      </UserContext.Provider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <UserContext.Provider value={{ name, setName, theme, setTheme }}>
+          <GluestackUIProvider mode={theme}>
+            <StatusBar style="light" />
+            <Slot screenOptions={{ headerShown: false }} />
+          </GluestackUIProvider>
+        </UserContext.Provider>
+      </GestureHandlerRootView>
     </Suspense>
   );
 };

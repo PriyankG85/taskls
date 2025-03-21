@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
 import Svg, { Circle, Ellipse, Path } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -9,7 +8,6 @@ interface GlassmorphicBackgroundProps {
   children: React.ReactNode;
   style?: ViewStyle;
   className?: string;
-  blurIntensity?: number;
   gradientColors?: string[];
   showShapes?: boolean;
 }
@@ -18,9 +16,8 @@ const GlassmorphicBackground: React.FC<GlassmorphicBackgroundProps> = ({
   children,
   style,
   className,
-  blurIntensity = 50,
-  gradientColors = ["#4c669f", "#3b5998", "#192f6a"],
-  showShapes,
+  gradientColors = ["#7A8CA0", "#5A7A9A", "#3D5A80"],
+  showShapes = true,
 }) => {
   return (
     <SafeAreaView
@@ -40,27 +37,25 @@ const GlassmorphicBackground: React.FC<GlassmorphicBackgroundProps> = ({
         {/* background shapes */}
         {showShapes && (
           <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
-            <Circle cx="10%" cy="10%" r="50" fill="rgba(255, 255, 255, 0.1)" />
+            <Circle cx="10%" cy="10%" r="50" fill="rgba(255, 255, 255, 0.03)" />
             <Ellipse
               cx="80%"
               cy="20%"
               rx="70"
               ry="40"
-              fill="rgba(255, 255, 255, 0.1)"
+              fill="rgba(255, 255, 255, 0.03)"
             />
             <Path
               d="M50,50 Q100,25 150,50 T250,50"
               fill="none"
-              stroke="rgba(255, 255, 255, 0.1)"
+              stroke="rgba(255, 255, 255, 0.05)"
               strokeWidth="2"
             />
-            <Circle cx="70%" cy="80%" r="30" fill="rgba(255, 255, 255, 0.1)" />
+            <Circle cx="70%" cy="80%" r="30" fill="rgba(255, 255, 255, 0.03)" />
           </Svg>
         )}
       </LinearGradient>
-      <BlurView intensity={blurIntensity} style={StyleSheet.absoluteFillObject}>
-        {children}
-      </BlurView>
+      {children}
     </SafeAreaView>
   );
 };

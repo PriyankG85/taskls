@@ -10,22 +10,12 @@ import * as ImagePicker from "expo-image-picker";
 import TodosContext from "@/context/userTodos";
 import AddTaskListContext from "@/context/addTaskList";
 import { useColorScheme } from "nativewind";
-
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetItemText,
-} from "@/components/ui/actionsheet";
+import Actionsheet from "@/components/ui/actionsheet";
 import { Image } from "expo-image";
-import { BlurView } from "expo-blur";
 import { Box } from "../ui/box";
-import { Input, InputField } from "../ui/input";
+import { Input } from "../ui/input";
 import Animated from "react-native-reanimated";
 import { handleAddTaskList, handleEditList } from "@/utils/handleTaskList";
-import { StyleSheet } from "react-native";
 import TextAvatar from "./TextAvatar";
 import { Text } from "react-native";
 
@@ -57,6 +47,7 @@ const AddTaskListDialogProvider = ({
 
   useEffect(() => {
     if (!visible) {
+      inputRef.current?.clear();
       setInput("");
       setLogo(undefined);
       setInvalid(false);
@@ -73,7 +64,6 @@ const AddTaskListDialogProvider = ({
       taskGroups,
       setTaskGroups,
       onInvalidInput: () => setInvalid(true),
-      onNoInput: () => inputRef.current?.focus(),
     });
 
     if (result) setVisible(false);
@@ -124,90 +114,66 @@ const AddTaskListDialogProvider = ({
       {children}
 
       <Actionsheet
-        isOpen={visible}
+        isVisible={visible}
         onClose={handleClose}
-        animationPreset="slide"
+        headerText={editMode ? "Edit List" : "Add List"}
       >
-        <ActionsheetBackdrop />
+        <Box className="p-5 pt-2 gap-y-5 pb-12">
+          <View className="gap-y-5">
+            <View className="flex-row justify-between items-center">
+              <Box className="p-2 rounded-2xl border border-secondary-900 justify-center items-center">
+                {logo && logo !== "" ? (
+                  <AnimatedImage
+                    source={{
+                      uri: logo,
+                    }}
+                    className="min-w-12 min-h-12 size-20 rounded-xl"
+                  />
+                ) : (
+                  <TextAvatar size={24} text={input === "" ? "?" : input} />
+                )}
+              </Box>
 
-        <ActionsheetContent className="gap-y-6 p-0 rounded-t-[2rem] shadow-lg shadow-background-0 overflow-hidden bg-background-0/60">
-          <BlurView
-            experimentalBlurMethod="dimezisBlurView"
-            intensity={75}
-            tint={dark ? "dark" : "light"}
-            className="absolute top-0 left-0 right-0 bottom-0"
-            style={StyleSheet.absoluteFillObject}
-          />
-
-          <Box className="p-5 pt-2 gap-y-5 pb-20">
-            <ActionsheetDragIndicatorWrapper>
-              <ActionsheetDragIndicator className="dark:bg-secondary-600 bg-secondary-900" />
-            </ActionsheetDragIndicatorWrapper>
-
-            <ActionsheetItemText className="text-typography-950 text-xl font-Metamorphous mb-5">
-              {editMode ? "Edit List" : "Add List"}
-            </ActionsheetItemText>
-
-            <View className="gap-y-5">
-              <View className="flex-row justify-between items-center">
-                <Box className="p-2 rounded-2xl border border-secondary-900 justify-center items-center">
-                  {logo && logo !== "" ? (
-                    <AnimatedImage
-                      source={{
-                        uri: logo,
-                      }}
-                      className="min-w-12 min-h-12 max-w-16 max-h-16 rounded-xl"
-                    />
-                  ) : (
-                    <TextAvatar size={24} text={input === "" ? "?" : input} />
-                  )}
-                </Box>
-
-                <Pressable
-                  android_ripple={{ color: "#1b1b1b20", foreground: true }}
-                  onPress={() => pickImage().then((uri) => setLogo(uri))}
-                  className="justify-center items-center dark:bg-primary-500 bg-secondary-950 rounded-lg px-4 py-2 overflow-hidden"
-                >
-                  <Text className="text-typography-0 text-base">
-                    Change Logo
-                  </Text>
-                </Pressable>
-              </View>
-
-              <Input
-                size="lg"
-                variant="outline"
-                isInvalid={invalid}
-                ref={inputRef}
-                className="border-secondary-900 focus:border focus:border-primary focus:shadow-outline"
+              <Pressable
+                android_ripple={{ color: "#1b1b1b20", foreground: true }}
+                onPress={() => pickImage().then((uri) => setLogo(uri))}
+                className="justify-center items-center dark:bg-primary-500 bg-secondary-950 rounded-lg px-7 py-3 overflow-hidden"
               >
-                <InputField
-                  onChangeText={(e) => {
-                    setInvalid(false);
-                    setInput(e);
-                  }}
-                  maxLength={24}
-                  placeholder="Group Name"
-                  placeholderTextColor={dark ? "#ffffff70" : "#00000070"}
-                  className="px-4 py-3 placeholder:text-typography-500"
-                />
-              </Input>
+                <Text className="text-typography-0 text-base">Change Logo</Text>
+              </Pressable>
             </View>
 
-            <Pressable
-              android_ripple={{ color: "#ffffff30", foreground: true }}
-              onPress={editMode ? handleUpdate : handleAdd}
-              className={`self-end items-center justify-center dark:bg-info-600 bg-primary-950 rounded-xl min-w-28 py-2 overflow-hidden ${
-                actionDisabled ? "opacity-60" : ""
-              }`}
-              disabled={actionDisabled}
-            >
-              <Text className="text-typography-0 text-base">
-                {editMode ? "Update" : "Add"}
-              </Text>
-            </Pressable>
-          </Box>
-        </ActionsheetContent>
+            <Input size="lg" variant="outline" isInvalid={invalid}>
+              <TextInput
+                ref={inputRef}
+                defaultValue={oldListTitle}
+                onChangeText={(text) => {
+                  setInvalid(false);
+                  setInput(text);
+                }}
+                maxLength={24}
+                placeholder="Group Name"
+                placeholderTextColor={dark ? "#ffffff70" : "#00000070"}
+                className="flex-1 px-4 py-3 text-typography-900 border-secondary-900 focus:border focus:border-primary focus:shadow-outline"
+              />
+            </Input>
+          </View>
+        </Box>
+
+        <View className="mx-4 pt-4 border-t border-outline-200">
+          <Pressable
+            android_ripple={{ color: "#ffffff30", foreground: true }}
+            onPress={editMode ? handleUpdate : handleAdd}
+            className={`self-end items-center justify-center bg-info-400 rounded-xl min-w-28 py-2.5 overflow-hidden ${
+              actionDisabled ? "opacity-60" : ""
+            }`}
+            disabled={actionDisabled}
+          >
+            <Text className="text-typography-white text-lg">
+              {editMode ? "Update" : "Add"}
+            </Text>
+          </Pressable>
+        </View>
       </Actionsheet>
     </AddTaskListContext.Provider>
   );

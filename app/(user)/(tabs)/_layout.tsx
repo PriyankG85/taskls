@@ -14,7 +14,6 @@ import { Tabs } from "expo-router";
 import LoadingIndicator from "@/components/global/LoadingIndicator";
 import ScrollYContext from "@/context/scrollY";
 import { useColorScheme } from "nativewind";
-import Animated from "react-native-reanimated";
 
 type TabsProps = {
   name: string;
@@ -62,7 +61,7 @@ const RootLayout = () => {
 
   return (
     <Suspense fallback={<LoadingIndicator />}>
-      <Animated.View className="flex-1">
+      <View className="flex-1">
         <ScrollYContext.Provider value={scrollY}>
           <Tabs
             tabBar={() => (
@@ -117,7 +116,7 @@ const RootLayout = () => {
             ))}
           </Tabs>
         </ScrollYContext.Provider>
-      </Animated.View>
+      </View>
     </Suspense>
   );
 };

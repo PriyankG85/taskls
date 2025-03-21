@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Pressable,
-  FlatList,
-} from "react-native";
+import { View, Text, Pressable } from "react-native";
 import React from "react";
 import TodosContext from "@/context/userTodos";
 import { TaskProps } from "@/types/taskProps";
@@ -15,6 +8,7 @@ import { Box } from "@/components/ui/box";
 import {
   Clock,
   Edit,
+  Ellipsis,
   Flag,
   Plus,
   SlidersHorizontal,
@@ -33,6 +27,8 @@ import FilterTasksDialog, {
   FilterSelections,
 } from "@/components/global/FilterTasksDialog";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import { Menu, MenuItem, MenuItemLabel } from "@/components/ui/menu";
+import { ScrollView } from "react-native";
 
 const TasksInGroup = () => {
   const dark = useColorScheme().colorScheme === "dark";
@@ -60,7 +56,10 @@ const TasksInGroup = () => {
     return;
   }
 
-  const groupTodos = todos.filter((todo) => todo.taskGroup === listInfo?.name);
+  const groupTodos = React.useMemo(
+    () => todos.filter((todo) => todo.taskGroup === listInfo?.name),
+    [todos]
+  );
   const groupName = listInfo.name;
   const groupLogo = listInfo.img;
 
@@ -81,10 +80,20 @@ const TasksInGroup = () => {
     return count;
   };
 
+  const filtersCount = () => {
+    let count = 0;
+    Object.keys(activeFilters).map((key) => {
+      let value = activeFilters[key];
+      if (Array.isArray(value)) count += value.length;
+      else count += 1;
+    });
+    return count;
+  };
+
   React.useEffect(() => {
-    setTodosToDisplay(groupTodos);
-    // alert(JSON.stringify(activeFilters));
-  }, [todos]);
+    if (filtersCount() === 0) setTodosToDisplay(groupTodos);
+    else applyFilters(activeFilters);
+  }, [groupTodos]);
 
   // Define filter categories
   const filterCategories: FilterCategory[] = [
@@ -173,10 +182,7 @@ const TasksInGroup = () => {
 
   return (
     <>
-      <Animated.View
-        //
-        className="flex-1 p-5 pt-10 gap-4"
-      >
+      <View className="flex-1 px-5 pt-10 gap-4">
         <View className="flex-row justify-between items-center">
           <View className="flex-row gap-2">
             <Box className="rounded-3xl size-20 p-2 bg-background-100/25 justify-center items-center">
@@ -206,9 +212,12 @@ const TasksInGroup = () => {
               </Text>
             </View>
           </View>
-          <View>
-            <TouchableOpacity
-              activeOpacity={0.5}
+          <View className="flex-col items-center gap-1">
+            <Pressable
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+                radius: 5,
+              }}
               className="p-1"
               onPress={() =>
                 router.push({
@@ -222,23 +231,49 @@ const TasksInGroup = () => {
                 color={dark ? "#ffffff" : "#000000"}
                 className="mr-3"
               />
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={handleRemoveTaskGroup}
-              className="p-1"
+            </Pressable>
+            <Menu
+              offset={5}
+              trigger={(props) => (
+                <Pressable
+                  andriod_ripple={{
+                    color: dark ? "#e0e0e010" : "#5c5c5c10",
+                    radius: 5,
+                  }}
+                  {...props}
+                >
+                  <Ellipsis size={18} color={dark ? "#fbfbfb" : "#1b1b1b"} />
+                </Pressable>
+              )}
+              className="right-2 bg-background-muted shadow rounded-xl"
             >
-              <Trash2 size={22} color="#FF5733" className="mr-3" />
-            </TouchableOpacity>
+              <MenuItem
+                key={"delete"}
+                textValue="Delete"
+                android_ripple={{
+                  color: dark ? "#e0e0e010" : "#5c5c5c10",
+                  foreground: true,
+                }}
+                onPress={handleRemoveTaskGroup}
+                className="gap-2"
+              >
+                <Trash2 size={16} color={"#B91C1C"} />
+                <MenuItemLabel
+                  size="lg"
+                  className="dark:text-white text-black font-roboto"
+                >
+                  Delete
+                </MenuItemLabel>
+              </MenuItem>
+            </Menu>
           </View>
         </View>
 
-        <Animated.ScrollView
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-[10px] pl-[5px] items-center"
           className="max-h-[36px]"
-          layout={LinearTransition}
         >
           {filterCategories[0].options.map((item) => {
             let active =
@@ -294,54 +329,33 @@ const TasksInGroup = () => {
               </View>
             )}
           </View>
-        </Animated.ScrollView>
+        </ScrollView>
 
         <Animated.FlatList
+          maxToRenderPerBatch={10}
           data={todosToDisplay.slice().reverse()}
           keyExtractor={(item) => item.taskId}
           renderItem={({ item: todo }) => (
-            <TaskControlsMenuWrapper
-              key={todo.taskId}
+            <TaskCard
+              tags={todo.tags}
               taskId={todo.taskId}
-              onPress={() =>
-                router.push({
-                  pathname: "/taskPreview",
-                  params: {
-                    priority: todo.priority,
-                    taskGroup: todo.taskGroup,
-                    taskTitle: todo.taskTitle,
-                    taskId: todo.taskId,
-                    notificationId: todo.notificationId,
-                    taskDescription: todo.taskDescription,
-                    dueDate: JSON.stringify(todo.dueDate),
-                    logo: todo.logo,
-                  },
-                })
-              }
-            >
-              <TaskCard
-                priority={todo.priority}
-                taskId={todo.taskId}
-                notificationId={todo.notificationId}
-                taskTitle={todo.taskTitle}
-                dueDate={todo.dueDate}
-                taskDescription={todo.taskDescription}
-                taskGroup={todo.taskGroup}
-                completed={todo.completed}
-              />
-            </TaskControlsMenuWrapper>
+              notificationId={todo.notificationId}
+              taskTitle={todo.taskTitle}
+              dueDate={todo.dueDate}
+              completed={todo.completed}
+            />
           )}
           ListEmptyComponent={
             <Text className="text-lg text-center text-typography-500">
               No tasks found
             </Text>
           }
-          contentContainerClassName="mt-2 gap-2"
+          contentContainerClassName="mt-2 gap-2 pb-10"
           className="flex-1"
           itemLayoutAnimation={LinearTransition}
           showsVerticalScrollIndicator={false}
         />
-      </Animated.View>
+      </View>
 
       <FilterTasksDialog
         isVisible={isFilterVisible}

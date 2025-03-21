@@ -10,7 +10,7 @@ import CircularProgress from "@/components/global/CircularProgress";
 import { router } from "expo-router";
 import PendingTaskCard from "@/components/home/PendingTaskCard";
 import TaskGroupCard from "@/components/home/TaskGroupCard";
-import { Suspense, useContext } from "react";
+import React, { Suspense, useContext, useEffect } from "react";
 import TodosContext from "@/context/userTodos";
 import { TaskProps } from "@/types/taskProps";
 import { TaskGroup } from "@/types/taskGroupProps";
@@ -20,6 +20,7 @@ import { Plus } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 import AddTaskListContext from "@/context/addTaskList";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import AnimatedHorizontalList from "@/components/global/AnimatedHorizontalList";
 
 export default function Home() {
   const dark = useColorScheme().colorScheme === "dark";
@@ -30,20 +31,39 @@ export default function Home() {
   }>(TodosContext);
   const scrollY: NativeAnimated.Value = useContext(ScrollYContext);
 
-  const pendingTodos = todos.filter(
-    (todo: TaskProps) => todo.completed === false || !todo.completed
+  const pendingTodos = React.useMemo(
+    () =>
+      todos.filter(
+        (todo: TaskProps) => todo.completed === false || !todo.completed
+      ),
+    [todos]
   );
-  const todaysTodos = todos.filter((todo) => {
-    const todayDate = new Date().toISOString().split("T")[0];
-    const taskDate = todo.dueDate?.date
-      ? todo.dueDate.date.split("T")[0]
-      : undefined;
-    return taskDate === todayDate;
-  });
-  const completedTodos = todaysTodos.filter((todo) => todo.completed === true);
+
+  const todaysTodosCount = () => {
+    let count = 0;
+    let todayDate = new Date().toISOString().split("T")[0];
+    todos.map((todo: TaskProps) => {
+      const taskDate = todo.dueDate?.date
+        ? todo.dueDate.date.split("T")[0]
+        : undefined;
+      if (taskDate === todayDate) count += 1;
+    });
+    return count;
+  };
+  const completedTodaysTodosCount = () => {
+    let count = 0;
+    let todayDate = new Date().toISOString().split("T")[0];
+    todos.map((todo: TaskProps) => {
+      const taskDate = todo.dueDate?.date
+        ? todo.dueDate.date.split("T")[0]
+        : undefined;
+      if (taskDate === todayDate && todo.completed === true) count += 1;
+    });
+    return count;
+  };
   const todaysTasksProgress =
-    todaysTodos.length > 0
-      ? Number((completedTodos.length / todaysTodos.length).toFixed(2))
+    todaysTodosCount() > 0
+      ? Number((completedTodaysTodosCount() / todaysTodosCount()).toFixed(2))
       : 1;
 
   const groupProgress = (group: TaskGroup) => {
@@ -133,12 +153,9 @@ export default function Home() {
             </TouchableOpacity>
           </View>
 
-          <Animated.FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="flex-row items-center p-5 gap-2 grow"
+          <AnimatedHorizontalList
             itemLayoutAnimation={LinearTransition}
-            data={pendingTodos.slice().reverse()}
+            data={pendingTodos.toReversed()}
             ListEmptyComponent={
               <Text className="text-center dark:text-dark-text-200/70 text-light-text-200/70 text-lg font-Quattrocento">
                 No Pending tasks!
@@ -147,12 +164,10 @@ export default function Home() {
             renderItem={({ item: todo }) => (
               <PendingTaskCard
                 key={todo.taskId}
-                priority={todo.priority}
                 taskId={todo.taskId}
                 notificationId={todo.notificationId}
                 taskGroup={todo.taskGroup}
                 taskTitle={todo.taskTitle}
-                taskDescription={todo.taskDescription}
                 logo={todo.logo && todo.logo}
                 dueDate={todo.dueDate}
                 completed={todo.completed}
@@ -176,12 +191,21 @@ export default function Home() {
               </View>
             </View>
 
-            <TouchableOpacity onPress={show}>
+            <Pressable
+              android_ripple={{
+                color: dark ? "#e0e0e010" : "#5c5c5c10",
+                radius: 20,
+                foreground: true,
+              }}
+              onPress={show}
+              className="overflow-hidden rounded-full p-2"
+            >
               <Plus size={20} color={dark ? "white" : "black"} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <Animated.FlatList
+            maxToRenderPerBatch={10}
             itemLayoutAnimation={LinearTransition}
             data={taskGroups.slice().reverse()}
             renderItem={({ item: group }) => (
