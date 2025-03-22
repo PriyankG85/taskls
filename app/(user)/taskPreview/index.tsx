@@ -26,6 +26,18 @@ const TaskPreview = () => {
   const { todos, setTodos } = useContext(TodosContext);
 
   const task = todos.find((todo: TaskProps) => todo.taskId === taskId);
+  
+  // Guard against not finding the task
+  if (!task) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className={dark ? "text-dark-text-100" : "text-light-text-100"}>
+          Task not found.
+        </Text>
+      </View>
+    );
+  }
+  
   const {
     taskTitle,
     priority,
