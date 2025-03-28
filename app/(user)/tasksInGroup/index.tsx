@@ -51,7 +51,7 @@ const TasksInGroup = () => {
   const alertDialog = useAlertDialog();
 
   if (!listInfo) {
-    alertDialog.show("Oops!", () => {}, "Something went wrong.", "Okay", false);
+    alertDialog.show("Oops!", () => { }, "Something went wrong.", "Okay", false);
     router.back();
     return;
   }
@@ -68,6 +68,8 @@ const TasksInGroup = () => {
   const [activeFilters, setActiveFilters] = React.useState<FilterSelections>(
     {}
   );
+
+  const progress = groupTodos.filter((task) => task.completed).length / groupTodos.length;
 
   const filtersOtherThanStatusCount = () => {
     let count = 0;
@@ -132,10 +134,10 @@ const TasksInGroup = () => {
         selections.status === "all"
           ? filtered
           : filtered.filter(
-              (task) =>
-                (task.completed ?? false) ===
-                (selections.status === "completed")
-            );
+            (task) =>
+              (task.completed ?? false) ===
+              (selections.status === "completed")
+          );
     }
 
     //* Apply priority filter
@@ -208,7 +210,7 @@ const TasksInGroup = () => {
                 </Pressable>
               </View>
               <Text className="font-Metamorphous text-sm dark:text-dark-accent-200 text-light-accent-200 ml-1">
-                {groupTodos.length} tasks
+                {groupTodos.length} tasks · {Math.round(groupTodos.length - groupTodos.length * progress)} pending
               </Text>
             </View>
           </View>
@@ -278,7 +280,7 @@ const TasksInGroup = () => {
           {filterCategories[0].options.map((item) => {
             let active =
               !Object.keys(activeFilters).includes("status") &&
-              item.id === "all"
+                item.id === "all"
                 ? true
                 : activeFilters.status === item.id;
             return (
@@ -288,17 +290,15 @@ const TasksInGroup = () => {
                   color: dark ? "#e0e0e010" : "#5c5c5c10",
                   foreground: true,
                 }}
-                className={`rounded-lg bg-background-50 px-7 py-2 overflow-hidden ${
-                  active && "border border-outline-500"
-                }`}
+                className={`rounded-lg bg-background-50 px-7 py-2 overflow-hidden ${active && "border border-outline-500"
+                  }`}
                 onPress={() =>
                   applyFilters({ ...activeFilters, status: item.id })
                 }
               >
                 <Text
-                  className={`text-base text-typography-400 ${
-                    active && "text-typography-900 font-extrabold"
-                  }`}
+                  className={`text-base text-typography-400 ${active && "text-typography-900 font-extrabold"
+                    }`}
                 >
                   {item.label}
                 </Text>

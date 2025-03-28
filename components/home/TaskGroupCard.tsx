@@ -43,7 +43,7 @@ const TaskGroupCard = memo(({ title, tasks, progress, img }: Props) => {
                 {title.length > 16 ? title.slice(0, 16) + "..." : title}
               </Text>
               <Text className="text-sm dark:text-dark-text-200/80 text-light-text-200/80">
-                {tasks} Tasks
+                {tasks} tasks · {Math.round(tasks - tasks * progress)} pending
               </Text>
             </View>
           </View>

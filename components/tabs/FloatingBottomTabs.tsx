@@ -1,6 +1,7 @@
-import React from "react";
+import { router } from "expo-router";
+import React, { useCallback } from "react";
 import { useRef, useEffect } from "react";
-import { View, ViewProps } from "react-native";
+import { BackHandler, View, ViewProps } from "react-native";
 import { Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,6 +27,24 @@ const FloatingBottomTabs = React.forwardRef<
     // Add state to track last scroll position for direction detection
     const lastScrollY = useRef(0);
 
+    const showTabs = useCallback(() => {
+      Animated.spring(translateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 44,
+        bounciness: 0,
+      }).start();
+    }, []);
+
+    const hideTabs = useCallback(() => {
+      Animated.spring(translateY, {
+        toValue: BOTTOM_TAB_HEIGHT + insets.bottom + bottomSpace,
+        useNativeDriver: true,
+        speed: 44,
+        bounciness: 0,
+      }).start();
+    }, [])
+
     useEffect(() => {
       const listenerId = scrollY.addListener(({ value }) => {
         // Check if scrolling up or down by comparing with last position
@@ -34,26 +53,13 @@ const FloatingBottomTabs = React.forwardRef<
 
         if (value < 0) {
           // Pulled down (overscroll), always show tabs
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
+          showTabs();
         } else if (isScrollingDown && value > 10) {
           // Scrolling DOWN, hide the tabs
-          Animated.spring(translateY, {
-            toValue: BOTTOM_TAB_HEIGHT + insets.bottom + bottomSpace,
-            useNativeDriver: true,
-            speed: 44,
-            bounciness: 0,
-          }).start();
+          hideTabs();
         } else if (!isScrollingDown) {
           // Scrolling UP, show the tabs
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            speed: 44,
-            bounciness: 0,
-          }).start();
+          showTabs();
         }
       });
 
@@ -61,6 +67,18 @@ const FloatingBottomTabs = React.forwardRef<
         scrollY.removeListener(listenerId);
       };
     }, [scrollY, translateY, insets.bottom, bottomSpace]);
+
+    // Handle back button press to show tabs if hidden
+    useEffect(() => {
+      const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+        if (lastScrollY.current > 0) {
+          showTabs();
+          return undefined;
+        }
+      });
+
+      return () => backHandler.remove();
+    }, []);
 
     return (
       <Animated.View

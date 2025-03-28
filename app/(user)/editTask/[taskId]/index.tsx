@@ -35,7 +35,7 @@ Notifications.setNotificationHandler({
 });
 
 const EditTask = () => {
-  const { taskId } = useLocalSearchParams();
+  const { taskId }: { taskId: string } = useLocalSearchParams();
 
   const dark = useColorScheme().colorScheme === "dark";
   const { todos, setTodos } = useContext<{
@@ -57,25 +57,27 @@ const EditTask = () => {
     taskToEdit.taskDescription
   );
 
+  const [logo, setLogo] = useState<string | undefined>();
+  const [checked, setChecked] = useState(!!taskToEdit.dueDate);
+  const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
+  const [tags, setTags] = useState<string[]>(taskToEdit.tags ?? []);
+
   const initialDate = taskToEdit.dueDate?.date
     ? new Date(taskToEdit.dueDate.date)
     : new Date();
   const initialTime = taskToEdit.dueDate?.time
     ? taskToEdit.dueDate.time
     : new Date().toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-      });
+      hour: "numeric",
+      minute: "numeric",
+    });
 
-  const [dueDate, setDueDate] = useState({
+  const initialDueDate = checked ? {
     date: initialDate,
     time: initialTime,
-  });
+  } : undefined
 
-  const [logo, setLogo] = useState<string | undefined>();
-  const [checked, setChecked] = useState(!!taskToEdit.dueDate);
-  const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
-  const [tags, setTags] = useState<string[]>(taskToEdit.tags ?? []);
+  const [dueDate, setDueDate] = useState(initialDueDate);
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
@@ -110,9 +112,9 @@ const EditTask = () => {
       return;
     }
 
-    if (
-      dueDate.date.toString() === "Invalid Date" ||
-      dueDate.time === "Invalid Date"
+    if (checked &&
+      (dueDate?.date?.toString() === "Invalid Date" ||
+        dueDate?.time === "Invalid Date")
     ) {
       ToastAndroid.show("Please select a date and time.", 5);
       return;
@@ -123,7 +125,7 @@ const EditTask = () => {
 
     // Scheduling Notifications
     let identifier = null;
-    if (checked) {
+    if (checked && dueDate) {
       const notificationId = await scheduleNotification(
         taskTitle,
         taskDescription,
@@ -135,16 +137,16 @@ const EditTask = () => {
 
     // Saving Task to Local Storage
     const newTaskDetails = {
-      taskId: new Date().getTime().toString(),
+      taskId,
       notificationId: identifier === null ? undefined : identifier,
       taskGroup,
       taskTitle: taskTitle.trim(),
       taskDescription: taskDescription.trim(),
-      dueDate: checked
+      dueDate: (checked && dueDate)
         ? {
-            date: dueDate.date.toISOString(),
-            time: dueDate.time,
-          }
+          date: dueDate.date.toISOString(),
+          time: dueDate.time,
+        }
         : undefined,
       logo,
       priority,
@@ -165,12 +167,7 @@ const EditTask = () => {
     if (
       taskTitle !== taskToEdit.taskTitle ||
       taskDescription !== taskToEdit.taskDescription ||
-      dueDate.date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        weekday: "short",
-      }) !== taskToEdit.dueDate?.date ||
-      dueDate.time !== taskToEdit.dueDate?.time ||
+      JSON.stringify(taskToEdit.dueDate) !== JSON.stringify(dueDate) ||
       logo !== taskToEdit.logo ||
       taskGroup !== taskToEdit.taskGroup
     ) {
@@ -183,9 +180,8 @@ const EditTask = () => {
     <ScrollView className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100">
       <View style={{ gap: 20 }}>
         <Text
-          className={`font-Metamorphous text-3xl ${
-            dark ? "text-dark-text-100" : "text-light-text-100"
-          }`}
+          className={`font-Metamorphous text-3xl ${dark ? "text-dark-text-100" : "text-light-text-100"
+            }`}
         >
           Edit Task
         </Text>
@@ -194,14 +190,14 @@ const EditTask = () => {
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
-          dueDate={{
+          dueDate={dueDate ? {
             date: dueDate.date.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               weekday: "short",
             }),
             time: dueDate.time,
-          }}
+          } : undefined}
           logo={logo}
           setTaskGroup={setTaskGroup}
           setTaskTitle={setTaskTitle}

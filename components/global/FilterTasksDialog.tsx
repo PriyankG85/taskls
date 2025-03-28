@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Check, Filter, LucideIcon } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
@@ -40,6 +40,10 @@ const FilterTasksDialog: React.FC<FilterDialogProps> = memo(
     const dark = useColorScheme().colorScheme === "dark";
     const [selections, setSelections] =
       useState<FilterSelections>(initialSelections);
+
+    useEffect(() => {
+      setSelections(initialSelections);
+    }, [isVisible]);
 
     const handleReset = () => {
       setSelections({});
@@ -118,11 +122,11 @@ const FilterTasksDialog: React.FC<FilterDialogProps> = memo(
                     style={[
                       isOptionSelected(category.id, option.id)
                         ? {
-                            backgroundColor: dark ? "#0A84FF" : "#007AFF",
-                          }
+                          backgroundColor: dark ? "#0A84FF" : "#007AFF",
+                        }
                         : {
-                            backgroundColor: dark ? "#ffffff20" : "#00000010",
-                          },
+                          backgroundColor: dark ? "#ffffff20" : "#00000010",
+                        },
                     ]}
                     className="flex-row items-center gap-2 px-5 py-2 rounded-full overflow-hidden"
                     android_ripple={{
