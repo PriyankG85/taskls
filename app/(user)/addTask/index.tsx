@@ -52,15 +52,10 @@ const AddTask = () => {
   );
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-  const [dueDate, setDueDate] = useState({
-    date: new Date(),
-    time: new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-    }),
-  });
-  const [logo, setLogo] = useState<string | undefined>();
   const [checked, setChecked] = useState(true);
+
+  const [dueDate, setDueDate] = useState(new Date());
+  const [logo, setLogo] = useState<string | undefined>();
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
   const [tags, setTags] = useState<string[]>([]);
 
@@ -97,41 +92,26 @@ const AddTask = () => {
       return;
     }
 
-    if (
-      dueDate.date.toString() === "Invalid Date" ||
-      dueDate.time === "Invalid Date"
-    ) {
-      ToastAndroid.show("Please select a date and time.", 5);
-      return;
-    }
-
     let identifier = null;
 
     // Scheduling Notifications
-    // FIXME: Notifications not working..
-    if (checked) {
+    if (checked && dueDate) {
       const notificationId = await scheduleNotification(
         taskTitle,
         taskDescription,
-        dueDate.date,
-        dueDate.time
+        dueDate
       );
       identifier = notificationId;
     }
 
     // Saving Task to Local Storage
     const taskDetails = {
-      taskId: new Date().getTime().toString(),
+      taskId: crypto.randomUUID(),
       notificationId: identifier === null ? undefined : identifier,
       taskGroup,
       taskTitle: taskTitle.trim(),
       taskDescription: taskDescription.trim(),
-      dueDate: checked
-        ? {
-            date: dueDate.date.toISOString(),
-            time: dueDate.time,
-          }
-        : undefined,
+      dueDate: checked && dueDate ? dueDate.toISOString() : undefined,
       logo,
       priority,
       tags,
@@ -160,14 +140,7 @@ const AddTask = () => {
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
-          dueDate={{
-            date: dueDate.date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              weekday: "short",
-            }),
-            time: dueDate.time,
-          }}
+          dueDate={dueDate.toISOString()}
           logo={logo}
           setTaskGroup={setTaskGroup}
           setTaskTitle={setTaskTitle}

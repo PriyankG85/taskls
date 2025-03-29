@@ -54,18 +54,17 @@ export async function registerForPushNotificationsAsync() {
 export async function scheduleNotification(
   title: string,
   body: string | undefined,
-  dueDate: Date,
-  time: string
+  dueDate: Date
 ) {
-  const dataTime = new Date(dueDate);
-  dataTime.setHours(Number(time.split(":")[0]));
-  dataTime.setMinutes(Number(time.split(":")[1]));
+  const isPast = dueDate < new Date();
 
   return await Notifications.scheduleNotificationAsync({
     content: { title, body },
-    trigger: {
-      date: dataTime,
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-    },
+    trigger: isPast
+      ? null
+      : {
+          date: dueDate,
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+        },
   });
 }

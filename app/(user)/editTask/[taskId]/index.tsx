@@ -62,20 +62,9 @@ const EditTask = () => {
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
   const [tags, setTags] = useState<string[]>(taskToEdit.tags ?? []);
 
-  const initialDate = taskToEdit.dueDate?.date
-    ? new Date(taskToEdit.dueDate.date)
+  const initialDueDate = taskToEdit.dueDate
+    ? new Date(taskToEdit.dueDate)
     : new Date();
-  const initialTime = taskToEdit.dueDate?.time
-    ? taskToEdit.dueDate.time
-    : new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-    });
-
-  const initialDueDate = checked ? {
-    date: initialDate,
-    time: initialTime,
-  } : undefined
 
   const [dueDate, setDueDate] = useState(initialDueDate);
 
@@ -112,14 +101,6 @@ const EditTask = () => {
       return;
     }
 
-    if (checked &&
-      (dueDate?.date?.toString() === "Invalid Date" ||
-        dueDate?.time === "Invalid Date")
-    ) {
-      ToastAndroid.show("Please select a date and time.", 5);
-      return;
-    }
-
     // Cancel Previous Notification
     await cancelNotification(taskToEdit?.notificationId);
 
@@ -129,8 +110,7 @@ const EditTask = () => {
       const notificationId = await scheduleNotification(
         taskTitle,
         taskDescription,
-        dueDate.date,
-        dueDate.time
+        dueDate
       );
       identifier = notificationId;
     }
@@ -142,12 +122,7 @@ const EditTask = () => {
       taskGroup,
       taskTitle: taskTitle.trim(),
       taskDescription: taskDescription.trim(),
-      dueDate: (checked && dueDate)
-        ? {
-          date: dueDate.date.toISOString(),
-          time: dueDate.time,
-        }
-        : undefined,
+      dueDate: checked && dueDate ? dueDate.toISOString() : undefined,
       logo,
       priority,
       tags,
@@ -180,8 +155,9 @@ const EditTask = () => {
     <ScrollView className="flex-1 p-5 pt-7 dark:bg-dark-bg-100 bg-light-bg-100">
       <View style={{ gap: 20 }}>
         <Text
-          className={`font-Metamorphous text-3xl ${dark ? "text-dark-text-100" : "text-light-text-100"
-            }`}
+          className={`font-Metamorphous text-3xl ${
+            dark ? "text-dark-text-100" : "text-light-text-100"
+          }`}
         >
           Edit Task
         </Text>
@@ -190,14 +166,7 @@ const EditTask = () => {
           taskGroup={taskGroup}
           taskTitle={taskTitle}
           taskDescription={taskDescription}
-          dueDate={dueDate ? {
-            date: dueDate.date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              weekday: "short",
-            }),
-            time: dueDate.time,
-          } : undefined}
+          dueDate={dueDate.toISOString()}
           logo={logo}
           setTaskGroup={setTaskGroup}
           setTaskTitle={setTaskTitle}

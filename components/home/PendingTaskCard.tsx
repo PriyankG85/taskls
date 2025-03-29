@@ -97,13 +97,16 @@ const PendingTaskCard = memo(
                 <Text
                   className={`dark:text-[#9ca3af] text-light-text-200/70 font-Metamorphous text-xs`}
                 >
-                  {new Date(dueDate.date).toLocaleDateString("en-US", {
+                  {new Date(dueDate).toLocaleDateString("en-US", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
                   })}
-                  {" • "}
-                  {dueDate.time}
+                  {" · "}
+                  {new Date(dueDate).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                  })}
                 </Text>
               </View>
             )}

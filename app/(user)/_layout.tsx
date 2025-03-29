@@ -1,7 +1,10 @@
 import Header from "@/components/global/Header";
 import TodosContext from "@/context/userTodos";
 import UserContext from "@/context/userdetails";
-import { getDataFromLocalStorage } from "@/hooks/useHandleLocalStorage";
+import {
+  getDataFromLocalStorage,
+  setDataToLocalStorage,
+} from "@/hooks/useHandleLocalStorage";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useContext, useEffect, useState } from "react";
@@ -11,6 +14,22 @@ import AddTaskListDialogProvider from "@/components/global/addTaskListProvider";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View } from "react-native";
 
+// TODO: Remove after migration
+async function dueDateFormatMigration(todos: any) {
+  const isDone = await getDataFromLocalStorage("dueDateFormatMigrationDone");
+  if (isDone === "true") {
+    return todos;
+  }
+  let newTodos = todos.forEach((todo: any) => {
+    if (todo.dueDate) {
+      todo.dueDate = todo.dueDate.date;
+    }
+  });
+  await setDataToLocalStorage("todos", JSON.stringify(newTodos));
+  await setDataToLocalStorage("dueDateFormatMigrationDone", "true");
+  return newTodos;
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme().colorScheme;
   const { name } = useContext(UserContext);
@@ -18,9 +37,11 @@ export default function RootLayout() {
   const [taskGroups, setTaskGroups] = useState([]);
 
   useEffect(() => {
-    getDataFromLocalStorage("todos").then((value) => {
+    getDataFromLocalStorage("todos").then(async (value) => {
       if (value) {
-        setTodos(JSON.parse(value));
+        // TODO: Change after migration
+        setTodos(await dueDateFormatMigration(JSON.parse(value)));
+        // setTodos(JSON.parse(value));
       }
     });
 

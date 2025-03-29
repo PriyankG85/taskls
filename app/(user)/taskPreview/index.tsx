@@ -26,7 +26,7 @@ const TaskPreview = () => {
   const { todos, setTodos } = useContext(TodosContext);
 
   const task = todos.find((todo: TaskProps) => todo.taskId === taskId);
-  
+
   // Guard against not finding the task
   if (!task) {
     return (
@@ -37,7 +37,7 @@ const TaskPreview = () => {
       </View>
     );
   }
-  
+
   const {
     taskTitle,
     priority,
@@ -45,21 +45,10 @@ const TaskPreview = () => {
     taskDescription,
     taskGroup,
     completed,
-    dueDate: unformattedDueDate,
+    dueDate,
     logo,
     notificationId,
   }: TaskProps = task;
-
-  const dueDate = unformattedDueDate
-    ? {
-        date: new Date(unformattedDueDate.date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          weekday: "short",
-        }),
-        time: unformattedDueDate.time,
-      }
-    : undefined;
 
   const handleRemoveTask = async () => {
     await handleDeleteTask(todos, setTodos, taskId, notificationId);

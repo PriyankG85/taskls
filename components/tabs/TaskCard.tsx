@@ -78,13 +78,16 @@ const TaskCard = memo(
                   <Clock size={16} color={"#9ca3afb3"} />
 
                   <Text className="text-[#9ca3af] font-Metamorphous text-xs">
-                    {new Date(dueDate.date).toLocaleDateString("en-US", {
+                    {new Date(dueDate).toLocaleDateString("en-US", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
                     })}
-                    {" • "}
-                    {dueDate.time}
+                    {" · "}
+                    {new Date(dueDate).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })}
                   </Text>
                 </View>
               )}

@@ -43,9 +43,7 @@ export default function Home() {
     let count = 0;
     let todayDate = new Date().toISOString().split("T")[0];
     todos.map((todo: TaskProps) => {
-      const taskDate = todo.dueDate?.date
-        ? todo.dueDate.date.split("T")[0]
-        : undefined;
+      const taskDate = todo.dueDate?.split("T")[0];
       if (taskDate === todayDate) count += 1;
     });
     return count;
@@ -54,9 +52,7 @@ export default function Home() {
     let count = 0;
     let todayDate = new Date().toISOString().split("T")[0];
     todos.map((todo: TaskProps) => {
-      const taskDate = todo.dueDate?.date
-        ? todo.dueDate.date.split("T")[0]
-        : undefined;
+      const taskDate = todo.dueDate?.split("T")[0];
       if (taskDate === todayDate && todo.completed === true) count += 1;
     });
     return count;

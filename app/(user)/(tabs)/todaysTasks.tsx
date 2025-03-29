@@ -33,9 +33,7 @@ const TodaysTasks = () => {
     () =>
       todos.filter((todo) => {
         const todayDate = today.toISOString().split("T")[0];
-        const taskDate = todo.dueDate?.date
-          ? todo.dueDate.date.split("T")[0]
-          : undefined;
+        const taskDate = todo.dueDate?.split("T")[0];
         return taskDate === todayDate;
       }),
     [todos]

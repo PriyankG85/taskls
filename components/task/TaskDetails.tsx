@@ -14,7 +14,6 @@ import { useColorScheme } from "nativewind";
 import Tag from "./Tag";
 import { TaskProps } from "@/types/taskProps";
 import { ScrollView } from "react-native";
-import parseDateString from "@/utils/parseDateString";
 
 interface Props extends Omit<TaskProps, "taskId"> {
   type: "add/edit" | "preview";
@@ -24,10 +23,7 @@ interface Props extends Omit<TaskProps, "taskId"> {
   setTaskGroup?: (taskGroup: string) => void;
   setTaskTitle?: (taskTitle: string) => void;
   setTaskDescription?: (taskDescription: string) => void;
-  setDueDate?: React.Dispatch<React.SetStateAction<{
-    date: Date;
-    time: string;
-  } | undefined>>
+  setDueDate?: React.Dispatch<React.SetStateAction<Date>>;
   setChecked?: (val: boolean) => void;
   taskTitleRef?: React.RefObject<TextInput>;
   taskTitleContainerRef?: React.RefObject<View>;
@@ -64,8 +60,9 @@ const TaskDetails = (props: Props) => {
       <View className="flex-row justify-between items-center p-4 rounded-xl dark:bg-dark-bg-300/60 bg-light-bg-300/60">
         <View className="flex-row items-center gap-x-4">
           <View
-            className={`rounded-3xl w-16 h-16 p-1.5 ${dark ? "bg-dark-accent-100" : "bg-light-bg-200"
-              } justify-center items-center`}
+            className={`rounded-3xl w-16 h-16 p-1.5 ${
+              dark ? "bg-dark-accent-100" : "bg-light-bg-200"
+            } justify-center items-center`}
           >
             {logo && logo !== "" ? (
               <Image
@@ -78,14 +75,16 @@ const TaskDetails = (props: Props) => {
           </View>
           <View>
             <Text
-              className={`${dark ? "text-dark-text-200" : "text-light-text-200"
-                } text-sm`}
+              className={`${
+                dark ? "text-dark-text-200" : "text-light-text-200"
+              } text-sm`}
             >
               List
             </Text>
             <Text
-              className={`${dark ? "text-white" : "text-black"
-                } text-lg font-roboto font-bold`}
+              className={`${
+                dark ? "text-white" : "text-black"
+              } text-lg font-roboto font-bold`}
             >
               {taskGroup}
             </Text>
@@ -194,7 +193,7 @@ const TaskDetails = (props: Props) => {
           >
             Due Date & Time
           </Text>
-          {(checked === false || !dueDate) ? (
+          {checked === false || !dueDate ? (
             <Text
               className={`dark:text-white text-black text-lg font-roboto font-bold`}
             >
@@ -209,17 +208,14 @@ const TaskDetails = (props: Props) => {
                   onPress={() =>
                     DateTimePickerAndroid.open({
                       minimumDate: new Date(),
-                      value: new Date(dueDate!.date),
+                      value: new Date(dueDate),
                       onChange: (event, selectedDate) => {
                         if (
                           selectedDate &&
                           selectedDate.toString() !== "Invalid Date" &&
                           setDueDate
                         ) {
-                          setDueDate({
-                            date: selectedDate,
-                            time: dueDate!.time,
-                          });
+                          setDueDate(selectedDate);
                         }
                       },
                       mode: "date",
@@ -229,7 +225,11 @@ const TaskDetails = (props: Props) => {
                   <Text
                     className={`dark:text-white text-black text-lg font-roboto font-bold`}
                   >
-                    {dueDate!.date}
+                    {new Date(dueDate).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </Text>
                 </Pressable>
               </View>
@@ -239,9 +239,7 @@ const TaskDetails = (props: Props) => {
                   disabled={type === "preview"}
                   onPress={() =>
                     DateTimePickerAndroid.open({
-                      value: new Date(parseDateString(dueDate!.date)
-                        .setTime(Date.now())
-                      ),
+                      value: new Date(new Date(dueDate).setTime(Date.now())),
                       display: "spinner",
                       minimumDate: new Date(),
                       onChange: (event, selectedDate) => {
@@ -250,13 +248,7 @@ const TaskDetails = (props: Props) => {
                           selectedDate.toString() !== "Invalid Date" &&
                           setDueDate
                         ) {
-                          setDueDate({
-                            date: selectedDate,
-                            time: selectedDate.toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }),
-                          });
+                          setDueDate(selectedDate);
                         }
                       },
                       mode: "time",
@@ -267,7 +259,10 @@ const TaskDetails = (props: Props) => {
                   <Text
                     className={`dark:text-white text-black text-lg font-roboto font-bold`}
                   >
-                    {dueDate!.time}
+                    {new Date(dueDate).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })}
                   </Text>
                 </Pressable>
               </View>
@@ -277,16 +272,14 @@ const TaskDetails = (props: Props) => {
 
         <View className="h-full p-1">
           {type === "add/edit" && checked !== undefined && setChecked && (
-            <CheckBox size={22} checked={checked} setChecked={(val) => {
-              setChecked(val)
-              setDueDate && setDueDate({
-                date: new Date(),
-                time: new Date().toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-              })
-            }} />
+            <CheckBox
+              size={22}
+              checked={checked}
+              setChecked={(val) => {
+                setChecked(val);
+                setDueDate && setDueDate(new Date());
+              }}
+            />
           )}
         </View>
       </View>
