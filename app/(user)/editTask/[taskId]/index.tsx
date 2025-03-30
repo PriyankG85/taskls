@@ -4,12 +4,11 @@ import {
   Text,
   TextInput,
   Platform,
-  ToastAndroid,
   Pressable,
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { setDataToLocalStorage } from "@/hooks/useHandleLocalStorage";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import TodosContext from "@/context/userTodos";
 import TaskDetails from "@/components/task/TaskDetails";
 import * as Notifications from "expo-notifications";
@@ -70,7 +69,6 @@ const EditTask = () => {
 
   const taskTitleRef = useRef<TextInput>(null);
   const taskTitleContainerRef = useRef<View>(null);
-  const navigation = useNavigation();
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(
@@ -118,7 +116,7 @@ const EditTask = () => {
     // Saving Task to Local Storage
     const newTaskDetails = {
       taskId,
-      notificationId: identifier === null ? undefined : identifier,
+      notificationId: !!identifier ? identifier : undefined,
       taskGroup,
       taskTitle: taskTitle.trim(),
       taskDescription: taskDescription.trim(),
@@ -135,7 +133,7 @@ const EditTask = () => {
     setDataToLocalStorage("todos", dataString);
     setTodos(editedTasks);
 
-    navigation.goBack();
+    router.back();
   };
 
   const checkTaskModified = () => {

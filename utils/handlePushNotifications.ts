@@ -58,8 +58,9 @@ export async function scheduleNotification(
 ) {
   const isPast = dueDate < new Date();
 
+  // TODO: Add a repeating task notifications functionality
   return await Notifications.scheduleNotificationAsync({
-    content: { title, body },
+    content: { title, body, sound: "notification.wav" },
     trigger: isPast
       ? null
       : {
